@@ -1,0 +1,70 @@
+<edmx:Edmx
+    xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx"
+    xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"
+    xmlns:sap="http://www.sap.com/Protocols/SAPData" Version="1.0">
+    <edmx:Reference
+        xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="./IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_CORE',Version='0001',SAP__Origin='ED1CLNT100')/$value">
+        <edmx:Include Namespace="Org.OData.Core.V1"/>
+    </edmx:Reference>
+    <edmx:Reference
+        xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="./IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_UI',Version='0001',SAP__Origin='ED1CLNT100')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.UI.v1"/>
+    </edmx:Reference>
+    <edmx:Reference
+        xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Uri="./IWFND/CATALOGSERVICE;v=2/Vocabularies(TechnicalName='%2FIWBEP%2FVOC_COMMUNICATION',Version='0001',SAP__Origin='ED1CLNT100')/$value">
+        <edmx:Include Namespace="com.sap.vocabularies.Communication.v1"/>
+    </edmx:Reference>
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema
+            xmlns="http://schemas.microsoft.com/ado/2008/09/edm" Namespace="ZSGW_REPORT_SRV" xml:lang="es" sap:schema-version="1">
+            <EntityType Name="Reporte01" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="Ticket"/>
+                    <PropertyRef Name="Bukrs"/>
+                </Key>
+                <Property Name="Ticket" Type="Edm.String" Nullable="false" MaxLength="10" sap:label="Número deTicket"/>
+                <Property Name="Bukrs" Type="Edm.String" Nullable="false" MaxLength="4" sap:label="Sociedad"/>
+                <Property Name="Statustk" Type="Edm.String" Nullable="false" MaxLength="2" sap:label="Estatus Ticket"/>
+                <Property Name="Desstattk" Type="Edm.String" Nullable="false" MaxLength="20" sap:label="Descripción st Ticke"/>
+                <Property Name="Codtorre" Type="Edm.String" Nullable="false" MaxLength="2" sap:label="Código de Torre"/>
+                <Property Name="Destorre" Type="Edm.String" Nullable="false" MaxLength="30" sap:label="Descripción de Torre"/>
+                <Property Name="Codproc" Type="Edm.String" Nullable="false" MaxLength="10" sap:label="Código de proceso"/>
+                <Property Name="Desdproc" Type="Edm.String" Nullable="false" MaxLength="40" sap:label="Descripción de proce"/>
+                <Property Name="Cargo" Type="Edm.String" Nullable="false" MaxLength="4" sap:label="Cargo"/>
+                <Property Name="Creuser" Type="Edm.String" Nullable="false" MaxLength="12" sap:label="Usuario"/>
+                <Property Name="Credate" Type="Edm.DateTime" Nullable="false" Precision="7" sap:label="Fecha"/>
+                <Property Name="Cretime" Type="Edm.Time" Nullable="false" Precision="0" sap:label="Hora"/>
+                <Property Name="Documento" Type="Edm.String" Nullable="false" MaxLength="15" sap:label="Documento"/>
+                <Property Name="Paso" Type="Edm.String" Nullable="false" MaxLength="4" sap:label="Paso del proceso"/>
+                <Property Name="Codtip" Type="Edm.String" Nullable="false" MaxLength="3" sap:label="Cod Tipo de Proceso"/>
+                <Property Name="Destip" Type="Edm.String" Nullable="false" MaxLength="20" sap:label="Desc Tipo de Proceso"/>
+                <Property Name="Postip" Type="Edm.String" Nullable="false" MaxLength="3" sap:label="Posición Tipo Proces"/>
+                <Property Name="Despostip" Type="Edm.String" Nullable="false" MaxLength="40" sap:label="Descrip Pos Tipo"/>
+            </EntityType>
+            <EntityContainer Name="ZSGW_REPORT_SRV_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="Reporte01Set" EntityType="ZSGW_REPORT_SRV.Reporte01" sap:content-version="1"/>
+            </EntityContainer>
+            <Annotations
+                xmlns="http://docs.oasis-open.org/odata/ns/edm" Target="ZSGW_REPORT_SRV.Reporte01">
+                <Annotation Term="com.sap.vocabularies.UI.v1.LineItem">
+                    <Collection>
+                        <Record Type="com.sap.vocabularies.UI.v1.DataField">
+                            <PropertyValue Property="Label" String="Statustk"/>
+                        </Record>
+                        <Record Type="com.sap.vocabularies.UI.v1.DataField">
+                            <PropertyValue Property="Label" String="Ticket"/>
+                        </Record>
+                        <Record Type="com.sap.vocabularies.UI.v1.DataFieldForAnnotation">
+                            <PropertyValue Property="Label" String="Ticket"/>
+                            <PropertyValue Property="Target" AnnotationPath="Ticket"/>
+                        </Record>
+                    </Collection>
+                </Annotation>
+            </Annotations>
+            <atom:link
+                xmlns:atom="http://www.w3.org/2005/Atom" rel="self" href="./sap/ZSGW_REPORT_SRV/$metadata"/>
+                <atom:link
+                    xmlns:atom="http://www.w3.org/2005/Atom" rel="latest-version" href="./sap/ZSGW_REPORT_SRV/$metadata"/>
+                </Schema>
+            </edmx:DataServices>
+        </edmx:Edmx>
