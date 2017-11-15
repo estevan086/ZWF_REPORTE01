@@ -22,14 +22,14 @@
 							<filterBar:FilterItem name="A" label="Fecha Inicio">
 								<filterBar:control>
 									<DatePicker id="datePickerfecini" 
-									valueFormat="MM/dd/YY"
+									valueFormat="yyyy-MM-ddTHH:mm:ss" 
 									change="handleDateChangefecini"/>
 								</filterBar:control>
 							</filterBar:FilterItem>
 							<filterBar:FilterItem name="B" label="Fecha Fin">
 								<filterBar:control>
 									<DatePicker id="datePickerfecfin"
-									valueFormat="MM/dd/YY"
+									valueFormat="yyyy-MM-ddTHH:mm:ss"
 									change="handleDateChangefecfin"/>
 								</filterBar:control>
 							</filterBar:FilterItem>
@@ -47,11 +47,26 @@
 									</MultiComboBox>
 								</filterBar:control>
 							</filterBar:FilterItem>
+							<filterBar:FilterItem name="E" label="Proceso">
+								<filterBar:control>
+									<MultiComboBox id="ProcesoCB" selectionFinish="handleSelectionProcesoFinish" items="{ path: '/TorreSet', sorter: { path: 'Destorre' } }">
+										<core:Item key="{Codtorre}" text="{Destorre}"/>
+									</MultiComboBox>
+								</filterBar:control>
+							</filterBar:FilterItem>
+							<filterBar:FilterItem name="F" label="Status">
+								<filterBar:control>
+									<MultiComboBox  selectionFinish="handleSelectionStatusFinish" items="{cbState>/items}"> 
+										<core:Item key="{cbState>Code}" text="{cbState>Name}"/>
+									</MultiComboBox>
+								</filterBar:control>
+							</filterBar:FilterItem>
 							
 						</filterBar:filterItems>
 					</filterBar:FilterBar>
 					<!--<Table id="table" width="auto"-->
-					<Table id="table" width="auto" items="{ path: '/Reporte01Set', sorter: { path: 'Ticket', descending: false } }" 
+					<!--<Table id="table" width="auto" items="{ path: '/Reporte01Set', sorter: { path: 'Ticket', descending: false } }" -->
+					<Table id="table" width="auto" items="{modelPath>/items}"
 						noDataText="{worklistView>/tableNoDataText}" busyIndicatorDelay="{worklistView>/tableBusyDelay}" growing="true" growingScrollToLoad="true"
 						updateFinished="onUpdateFinished">
 						<headerToolbar>
@@ -61,6 +76,8 @@
 								<SearchField id="searchField" tooltip="{i18n>worklistSearchTooltip}" search="onSearch" width="auto"></SearchField>
 								<Button icon="sap-icon://download" press="onDataExport"/>
 								<Button text="Ejecutar" press="ongetData"/>
+								<ToolbarSpacer/>
+								<Button tooltip="View Settings" icon="sap-icon://drop-down-list" press="handleViewSettingsDialogButtonPressed" />
 							</Toolbar>
 						</headerToolbar>
 						<columns>
@@ -80,10 +97,10 @@
 						<items>
 							<ColumnListItem type="Navigation" press="onPress">
 								<cells>
-									<ObjectIdentifier title="{Ticket}"/>
-									<Text text="{Bukrs}"/>
-									<Text text="{Codtorre}"/>
-									<ObjectNumber number="{Desstattk}" state="{ path: 'Statustk', formatter: '.formatter.status' }"/>
+									<ObjectIdentifier title="{modelPath>Ticket}"/>
+									<Text text="{modelPath>Bukrs}"/>
+									<Text text="{modelPath>Codtorre}"/>
+									<ObjectNumber number="{modelPath>Desstattk}" state="{ path: 'modelPath>Statustk', formatter: '.formatter.status' }"/>
 								</cells>
 							</ColumnListItem>
 						</items>

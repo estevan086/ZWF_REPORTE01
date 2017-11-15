@@ -54,7 +54,35 @@ sap.ui.define([
 					oViewModel.getProperty("/shareSendEmailSubject"),
 					oViewModel.getProperty("/shareSendEmailMessage")
 				);
-			}
+			},
+			
+					/**
+		 * Consumir servicio READ
+		 * @public
+		 * @param {object} pModel Modelo del Servicio Web
+		 * @param {string} pEntidad Nombre de la entidad a consumir
+		 * @param {object} pFilters Objeto con los filtros definidos
+		 */
+		fnReadEntity: function(pModelo, pEntidad, pFilters) {
+			var vMensaje = null;
+			var oMensaje = {};
+
+			var fnSucess = function(data, response) {
+				oMensaje.tipo = "S";
+				oMensaje.datos = data;
+			};
+			var fnError = function(e) {
+				vMensaje = JSON.parse(e.response.body);
+				vMensaje = vMensaje.error.message.value;
+
+				oMensaje.tipo = "E";
+				oMensaje.msjs = vMensaje;
+			};
+
+			pModelo.read(pEntidad, null, pFilters, false, fnSucess, fnError);
+
+			return oMensaje;
+		}
 
 		});
 

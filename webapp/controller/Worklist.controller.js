@@ -3,6 +3,8 @@
 var gd_FecIni;
 var gd_FecIni;
 
+var g_servicio_reporte = "/sap/opu/odata/sap/ZSGW_REPORTES_SRV/";
+
 sap.ui.define([
 	"com/controller/BaseController",
 	"sap/ui/model/json/JSONModel",
@@ -15,9 +17,12 @@ sap.ui.define([
 	"com/model/formatter",
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/util/Export",
-	"sap/ui/core/util/ExportTypeCSV"
-], function(BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox, MessageToast, Formatter, Controller, Export,
-	ExportTypeCSV) {
+	"sap/ui/core/util/ExportTypeCSV",
+	'sap/ui/model/Sorter'
+], function(BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox, MessageToast, Formatter, Controller,
+	Export,
+	ExportTypeCSV,
+	Sorter) {
 	"use strict";
 
 	return BaseController.extend("com.controller.Worklist", {
@@ -34,6 +39,7 @@ sap.ui.define([
 		 */
 		onInit: function() {
 			var oViewModel,
+				oTableModel,
 				iOriginalBusyDelay,
 				oTable = this.byId("table");
 
@@ -44,14 +50,42 @@ sap.ui.define([
 			// keeps the search state
 			this._aTableSearchState = [];
 
+			var oModelTable = {
+				"items": [
+
+				]
+			};
+			oTableModel = new JSONModel();
+			oTableModel.setData(oModelTable);
+
+			oTable.setModel(oTableModel);
+
 			this._oTable = oTable;
 			// keeps the filter and search state
 			this._oListFilterState = {
 				aFilter: [],
 				aSearch: []
 			};
-			
+
 			this._selectedSociedadItems = [];
+			this._selectedTorreItems = [];
+			this._selectedProcesoItems = [];
+			this._selectedStatusItems = [];
+
+			var cbStateItems = [{
+				Code: "00",
+				Name: "Abierto"
+			}, {
+				Code: "10",
+				Name: "Cerrado"
+			}, {
+				Code: "15",
+				Name: "Anulado"
+			}];
+			var cbStateModel = new JSONModel({
+				items: cbStateItems
+			});
+			this.getView().setModel(cbStateModel, "cbState");
 
 			// Model used to manipulate control states
 			oViewModel = new JSONModel({
@@ -136,8 +170,9 @@ sap.ui.define([
 		ongetData: function(oEvent) {
 
 			debugger;
-			
+
 			this._oListFilterState.aSearch = [];
+			this._oListFilterState.aFilter = [];
 
 			var oTabBar = this.byId("iconTabBar");
 			//	oTabBar.getBinding("items");
@@ -148,21 +183,54 @@ sap.ui.define([
 
 			var Fecfin = this.byId("datePickerfecfin").mProperties.value;
 
+			//Valida y Asigna Filtro Rango de Fechas
 			if (!Fecini || !Fecfin) {
 				//_oListFilterState = [new Filter("FECHA_I", FilterOperator.Contains, Fecini)];
-				MessageBox.warning('Debe ingresar el Rango de Fechas', null, "Mensaje del sistema", "OK", null);
-				return;
+				//	MessageBox.warning('Debe ingresar el Rango de Fechas', null, "Mensaje del sistema", "OK", null);
+				//	return;
 			} else {
-				this._oListFilterState.aSearch.push(new Filter("Credatetk", FilterOperator.BT, Fecini, Fecfin));
+				this._oListFilterState.aFilter.push(new Filter("Credatetk", FilterOperator.BT, Fecini, Fecfin));
+				var oCredatetkFilters = "Credatetk ge datetime'" + Fecini +"' and Credatetk le datetime'" + Fecfin + "'" ;
 			}
 
-			if ( this._selectedSociedadItems.length > 0 ) {
-				for (var i = 0; i < this._selectedSociedadItems.length; i++) {
-					
+			var i = 0;
+			var oBukrsFilters;
+			//Adiciona Filtros por Sociedad
+			if (this._selectedSociedadItems.length > 0) {
+				for (i = 0; i < this._selectedSociedadItems.length; i++) {
+
 					//this._selectedSociedadItems.push( selectedItems[i].getKey() );
-					this._oListFilterState.aSearch.push(new Filter("Bukrs", FilterOperator.EQ, this._selectedSociedadItems[i] ));
+					this._oListFilterState.aFilter.push(new Filter("Bukrs", FilterOperator.EQ, this._selectedSociedadItems[i]));
+					
+					if (!oBukrsFilters){
+						oBukrsFilters = " Bukrs eq '" + this._selectedSociedadItems[i] +"'" ;
+					}
+					else{
+						oBukrsFilters = oBukrsFilters + " or Bukrs eq '" + this._selectedSociedadItems[i] +"'"  ;
+					}
 				}
-				
+
+			}
+			//Adiciona Filtros por Torre
+			if (this._selectedTorreItems.length > 0) {
+				for (i = 0; i < this._selectedTorreItems.length; i++) {
+					this._oListFilterState.aFilter.push(new Filter("Codtorre", FilterOperator.EQ, this._selectedTorreItems[i]));
+				}
+
+			}
+			//Adiciona Filtros por Proceso
+			if (this._selectedProcesoItems.length > 0) {
+				for (i = 0; i < this._selectedProcesoItems.length; i++) {
+					this._oListFilterState.aFilter.push(new Filter("Codproc", FilterOperator.EQ, this._selectedProcesoItems[i]));
+				}
+
+			}
+			//Adiciona Filtros por Status
+			if (this._selectedStatusItems.length > 0) {
+				for (i = 0; i < this._selectedStatusItems.length; i++) {
+					this._oListFilterState.aFilter.push(new Filter("Statustk", FilterOperator.EQ, this._selectedStatusItems[i]));
+				}
+
 			}
 
 			var sQuery = oEvent.getParameter("query");
@@ -171,8 +239,92 @@ sap.ui.define([
 				this._oListFilterState.aSearch = [new Filter("Ticket", FilterOperator.Contains, sQuery)];
 			}
 
-			if (this._oListFilterState.aSearch.length > 0) {
-				this._applySearchParam();
+			if (this._oListFilterState.aFilter.length > 0) {
+				//this._applySearchParam();
+
+				var oModelData = {
+					"items": [
+
+					]
+				};
+				
+				var oModelDataDetail = {
+					"items": [
+
+					]
+				};
+
+				//Definir modelo del servicio web
+				//	var BindingContext = this.getView().getBindingContext();
+
+				//Se obtiene el contexto para los datos del Aviso Seleccionado
+				//	var sServiceUrl = BindingContext.oModel.sServiceUrl;
+
+				//Definir modelo del servicio web
+				var oModelServiceArchivosCount = new sap.ui.model.odata.ODataModel(g_servicio_reporte, true);
+				// var Url_Servi = "Reporte01Set?$filter=  Sociedad eq '" + gdatos_ticket.Bukrs + "' and Ticket eq '" + gdatos_ticket.Ticket +
+				// 	"' and Pasoproc eq '" + gdatos_ticket.Pasoproc + "'";
+
+				//Definir filtro
+				var oFilter ={
+					$filter: ["Bukrs eq 'CEOC' and Bukrs eq 'GDOC' "]
+				};
+
+				var Url_Servi = "/Reporte01Set" ;
+				debugger;
+				var _Filters = this._oListFilterState.aSearch.concat(this._oListFilterState.aFilter);
+/*
+				var ld_date = new Date("2015-08-20"); //
+				var valid_date = "2015-08-20T00:00:00" // hardcoded for example
+				var arrParams = ["$filter=Credatetk ge datetime'" + Fecini +"' and Credatetk le datetime'" + Fecfin + "'"];
+				
+				*/
+					
+				var oFilters = oCredatetkFilters + " and ( "+ oBukrsFilters + " )" ;
+				var arrParams2 = ["$filter=" + oFilters ];
+				
+				//$filter: "(" + filterMatnr + ") and (" + filterMatkl + ") and (" + filterKschl + ")"
+				
+				//Leer datos del ERP
+				var oRead = this.fnReadEntity(oModelServiceArchivosCount, Url_Servi, arrParams2);
+
+				if (oRead.tipo === "S") {
+					if (oRead.datos.results.length > 0) {
+
+						for (i = 0; i < oRead.datos.results.length; i++) {
+
+							var oItem = oRead.datos.results[i];
+
+							if (oItem.Num === 1) {
+								switch (oItem.Status) {
+									case '00':
+										oItem.highlight = "Error";
+										break;
+									case '01':
+										oItem.highlight = "Success";
+										break;
+									default:
+										oItem.highlight = "Warning";
+								}
+								oModelData.items.push(oItem);
+							}
+
+							oModelDataDetail.items.push(oItem);
+						}
+
+						var oModel = new sap.ui.model.json.JSONModel();
+						oModel.setData(oModelData);
+
+						var list_logwf = this.byId("table");
+
+						list_logwf.setModel(oModel, "modelPath");
+
+						//this.getView().setModel(oModel, "modelPath");
+
+					}
+				} else {
+					MessageBox.error(oRead.msjs, null, "Mensaje del sistema", "OK", null);
+				}
 			}
 
 		},
@@ -223,6 +375,59 @@ sap.ui.define([
 		onRefresh: function() {
 			var oTable = this.byId("table");
 			oTable.getBinding("items").refresh();
+		},
+		
+		handleViewSettingsDialogButtonPressed: function (oEvent) {
+			if (!this._oDialog) {
+				this._oDialog = sap.ui.xmlfragment("com.view.fragment.Dialog", this);
+			}
+			// toggle compact style
+			jQuery.sap.syncStyleClass("sapUiSizeCompact", this.getView(), this._oDialog);
+			this._oDialog.open();
+		},
+		
+		
+		handleConfirm: function(oEvent) {
+
+			var oView = this.getView();
+			var oTable = oView.byId("table");
+
+			var mParams = oEvent.getParameters();
+			var oBinding = oTable.getBinding("items");
+
+			// apply sorter to binding
+			// (grouping comes before sorting)
+			var sPath;
+			var bDescending;
+			var vGroup;
+			var aSorters = [];
+			if (mParams.groupItem) {
+				sPath = mParams.groupItem.getKey();
+				bDescending = mParams.groupDescending;
+				vGroup = this.mGroupFunctions[sPath];
+				aSorters.push(new Sorter(sPath, bDescending, vGroup));
+			}
+			sPath = mParams.sortItem.getKey();
+			bDescending = mParams.sortDescending;
+			aSorters.push(new Sorter(sPath, bDescending));
+			oBinding.sort(aSorters);
+
+			// apply filters to binding
+			var aFilters = [];
+			jQuery.each(mParams.filterItems, function (i, oItem) {
+				var aSplit2 = oItem.getKey().split("___");
+				var sPath2 = aSplit2[0];
+				var sOperator = aSplit2[1];
+				var sValue1 = aSplit2[2];
+				var sValue2 = aSplit2[3];
+				var oFilter = new Filter(sPath2, sOperator, sValue1, sValue2);
+				aFilters.push(oFilter);
+			});
+			oBinding.filter(aFilters);
+
+			// update filter bar
+			//oView.byId("vsdFilterBar").setVisible(aFilters.length > 0);
+			//oView.byId("vsdFilterLabel").setText(mParams.filterString);
 		},
 
 		/* =========================================================== */
@@ -348,11 +553,11 @@ sap.ui.define([
 		handleSelectionSociedadFinish: function(oEvent) {
 			var selectedItems = oEvent.getParameter("selectedItems");
 			var messageText = "Event 'selectionFinished': [";
-			
+
 			this._selectedSociedadItems = [];
 			for (var i = 0; i < selectedItems.length; i++) {
 				messageText += "'" + selectedItems[i].getText() + "'";
-				this._selectedSociedadItems.push( selectedItems[i].getKey() );
+				this._selectedSociedadItems.push(selectedItems[i].getKey());
 				if (i !== selectedItems.length - 1) {
 					messageText += ",";
 				}
@@ -364,15 +569,55 @@ sap.ui.define([
 				width: "auto"
 			});*/
 		},
-		
+
 		handleSelectionTorreFinish: function(oEvent) {
 			var selectedItems = oEvent.getParameter("selectedItems");
 			var messageText = "Event 'selectionFinished': [";
-			
-			this._selectedSociedadItems = [];
+
+			this._selectedTorreItems = [];
 			for (var i = 0; i < selectedItems.length; i++) {
 				messageText += "'" + selectedItems[i].getText() + "'";
-				this._selectedSociedadItems.push( selectedItems[i].getKey() );
+				this._selectedTorreItems.push(selectedItems[i].getKey());
+				if (i !== selectedItems.length - 1) {
+					messageText += ",";
+				}
+			}
+
+			messageText += "]";
+
+			/*MessageToast.show(messageText, {
+				width: "auto"
+			});*/
+		},
+
+		handleSelectionProcesoFinish: function(oEvent) {
+			var selectedItems = oEvent.getParameter("selectedItems");
+			var messageText = "Event 'selectionFinished': [";
+
+			this._selectedProcesoItems = [];
+			for (var i = 0; i < selectedItems.length; i++) {
+				messageText += "'" + selectedItems[i].getText() + "'";
+				this._selectedProcesoItems.push(selectedItems[i].getKey());
+				if (i !== selectedItems.length - 1) {
+					messageText += ",";
+				}
+			}
+
+			messageText += "]";
+
+			/*MessageToast.show(messageText, {
+				width: "auto"
+			});*/
+		},
+
+		handleSelectionStatusFinish: function(oEvent) {
+			var selectedItems = oEvent.getParameter("selectedItems");
+			var messageText = "Event 'selectionFinished': [";
+
+			this._selectedStatusItems = [];
+			for (var i = 0; i < selectedItems.length; i++) {
+				messageText += "'" + selectedItems[i].getText() + "'";
+				this._selectedStatusItems.push(selectedItems[i].getKey());
 				if (i !== selectedItems.length - 1) {
 					messageText += ",";
 				}
