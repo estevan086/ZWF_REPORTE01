@@ -95,9 +95,21 @@ sap.ui.define([
 				shareSendEmailSubject: this.getResourceBundle().getText("shareSendEmailWorklistSubject"),
 				shareSendEmailMessage: this.getResourceBundle().getText("shareSendEmailWorklistMessage", [location.href]),
 				tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
-				tableBusyDelay: 0
+				tableBusyDelay: 0,
+				Cerrados: 0,
+				Abiertos: 0,
+				Anulados: 0,
+				worklistTableCount: 0
 			});
 			this.setModel(oViewModel, "worklistView");
+			
+			// Create an object of filters
+			this._mFilters = {
+				"idCerrados": [new sap.ui.model.Filter("Statustk", "EQ", "10")],
+				"idAbiertos": [new sap.ui.model.Filter("Statustk", "EQ", "00")],
+				"idAnulados": [new sap.ui.model.Filter("Statustk", "EQ", "15")],
+				"all": []
+			};
 
 			// Make sure, busy indication is showing immediately so there is no
 			// break after the busy indication for loading the view's meta data is
@@ -131,8 +143,8 @@ sap.ui.define([
 			// the table is not empty
 			if (iTotalItems && oTable.getBinding("items").isLengthFinal()) {
 				sTitle = this.getResourceBundle().getText("worklistTableTitleCount", [iTotalItems]);
-				sTitle2 = this.getResourceBundle().getText("worklistTableCount", [iTotalItems]);
-				this.getModel("worklistView").setProperty("/worklistTableCount", sTitle2);
+				// sTitle2 = this.getResourceBundle().getText("worklistTableCount", [iTotalItems]);
+				// this.getModel("worklistView").setProperty("/worklistTableCount", sTitle2);
 			} else {
 				sTitle = this.getResourceBundle().getText("worklistTableTitle");
 			}
@@ -144,9 +156,14 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the table selectionChange event
 		 * @public
 		 */
-		onPress: function(oEvent) {
+		onPressRow: function(oEvent) {
 			// The source is the list item that got pressed
 			this._showObject(oEvent.getSource());
+		},
+		
+		onSelectionChange: function(event) {
+		    alert(event.getSource().getSelectedItem().getBindingContext().getObject().Name);
+		    console.log(JSON.stringify(event.getSource().getSelectedItem().getBindingContext().getObject()));
 		},
 
 		/**
@@ -212,23 +229,45 @@ sap.ui.define([
 
 			}
 			//Adiciona Filtros por Torre
+			var oCodtorreFilters;
 			if (this._selectedTorreItems.length > 0) {
 				for (i = 0; i < this._selectedTorreItems.length; i++) {
 					this._oListFilterState.aFilter.push(new Filter("Codtorre", FilterOperator.EQ, this._selectedTorreItems[i]));
+					
+					if (!oCodtorreFilters){
+						oCodtorreFilters = " Codtorre eq '" + this._selectedTorreItems[i] +"'" ;
+					}
+					else{
+						oCodtorreFilters = oCodtorreFilters + " or Codtorre eq '" + this._selectedTorreItems[i] +"'"  ;
+					}
 				}
 
 			}
 			//Adiciona Filtros por Proceso
+			var oCodprocFilters;
 			if (this._selectedProcesoItems.length > 0) {
 				for (i = 0; i < this._selectedProcesoItems.length; i++) {
 					this._oListFilterState.aFilter.push(new Filter("Codproc", FilterOperator.EQ, this._selectedProcesoItems[i]));
+					if (!oCodprocFilters){
+						oCodprocFilters = " Codproc eq '" + this._selectedProcesoItems[i] +"'" ;
+					}
+					else{
+						oCodprocFilters = oCodprocFilters + " or Codproc eq '" + this._selectedProcesoItems[i] +"'"  ;
+					}
 				}
 
 			}
 			//Adiciona Filtros por Status
+			var oStatusFilters;
 			if (this._selectedStatusItems.length > 0) {
 				for (i = 0; i < this._selectedStatusItems.length; i++) {
 					this._oListFilterState.aFilter.push(new Filter("Statustk", FilterOperator.EQ, this._selectedStatusItems[i]));
+					if (!oStatusFilters){
+						oStatusFilters = " Statustk eq '" + this._selectedStatusItems[i] +"'" ;
+					}
+					else{
+						oStatusFilters = oStatusFilters + " or Statustk eq '" + this._selectedStatusItems[i] +"'"  ;
+					}
 				}
 
 			}
@@ -266,9 +305,9 @@ sap.ui.define([
 				// 	"' and Pasoproc eq '" + gdatos_ticket.Pasoproc + "'";
 
 				//Definir filtro
-				var oFilter ={
+				/*var oFilter ={
 					$filter: ["Bukrs eq 'CEOC' and Bukrs eq 'GDOC' "]
-				};
+				};*/
 
 				var Url_Servi = "/Reporte01Set" ;
 				debugger;
@@ -280,14 +319,30 @@ sap.ui.define([
 				
 				*/
 					
-				var oFilters = oCredatetkFilters + " and ( "+ oBukrsFilters + " )" ;
+				var oFilters = oCredatetkFilters;
+				//Valida si Seleccionaron filtros por Sociedad
+				if (oBukrsFilters){
+					oFilters = oFilters + " and ( "+ oBukrsFilters + " )" ;
+				}
+				//Valida si Seleccionaron filtros por Torre
+				if (oCodtorreFilters){
+					oFilters = oFilters + " and ( "+ oCodtorreFilters + " )" ;
+				}
+				//Valida si Seleccionaron filtros por Proceso
+				if (oCodprocFilters){
+					oFilters = oFilters + " and ( "+ oCodprocFilters + " )" ;
+				}
+				//Valida si Seleccionaron filtros por Status
+				if (oStatusFilters){
+					oFilters = oFilters + " and ( "+ oStatusFilters + " )" ;
+				}
 				var arrParams2 = ["$filter=" + oFilters ];
 				
 				//$filter: "(" + filterMatnr + ") and (" + filterMatkl + ") and (" + filterKschl + ")"
 				
 				//Leer datos del ERP
 				var oRead = this.fnReadEntity(oModelServiceArchivosCount, Url_Servi, arrParams2);
-
+				var iTotalItems = 0 , iTotalItemsCerrados = 0 , iTotalItemsAbiertos = 0 , iTotalItemsAnulados = 0 ;
 				if (oRead.tipo === "S") {
 					if (oRead.datos.results.length > 0) {
 
@@ -296,16 +351,24 @@ sap.ui.define([
 							var oItem = oRead.datos.results[i];
 
 							if (oItem.Num === 1) {
-								switch (oItem.Status) {
-									case '00':
-										oItem.highlight = "Error";
+								switch (oItem.Statustk) {
+									case "00":
+										oItem.highlight = "Warning";
+										iTotalItemsAbiertos ++;
 										break;
-									case '01':
+									case "10":
 										oItem.highlight = "Success";
+										iTotalItemsCerrados ++;
 										break;
+									case "15":
+										oItem.highlight = "Error";
+										iTotalItemsAnulados ++;
+										break;	
 									default:
 										oItem.highlight = "Warning";
+										iTotalItemsAbiertos ++;
 								}
+								iTotalItems ++;
 								oModelData.items.push(oItem);
 							}
 
@@ -317,8 +380,19 @@ sap.ui.define([
 
 						var list_logwf = this.byId("table");
 
-						list_logwf.setModel(oModel, "modelPath");
+						list_logwf.setModel(oModel, "modelPath"); 
 
+						var sTitleTotal = this.getResourceBundle().getText("worklistTableCount", [iTotalItems]);
+						this.getModel("worklistView").setProperty("/worklistTableCount", sTitleTotal);
+						
+						var sTitleCerrados = this.getResourceBundle().getText("worklistTableCountCerrados", [iTotalItemsCerrados]);
+						this.getModel("worklistView").setProperty("/worklistTableCountCerrados", sTitleCerrados);
+						
+						var sTitleAbiertos = this.getResourceBundle().getText("worklistTableCountAbiertos", [iTotalItemsAbiertos]);
+						this.getModel("worklistView").setProperty("/worklistTableCountAbiertos", sTitleAbiertos);
+						
+						var sTitleAnulados = this.getResourceBundle().getText("worklistTableCountAnulados", [iTotalItemsAnulados]);
+						this.getModel("worklistView").setProperty("/worklistTableCountAnulados", sTitleAnulados);
 						//this.getView().setModel(oModel, "modelPath");
 
 					}
@@ -329,6 +403,18 @@ sap.ui.define([
 
 		},
 
+		/**
+		 * Event handler when a filter tab gets pressed
+		 * @param {sap.ui.base.Event} oEvent the filter tab event
+		 * @public
+		 */
+		onQuickFilter: function(oEvent) {
+			var oBinding = this._oTable.getBinding("items"),
+				sKey = oEvent.getParameter("selectedKey");
+
+			oBinding.filter(this._mFilters[sKey]);
+		},
+		
 		onSearch: function(oEvent) {
 			if (oEvent.getParameters().refreshButtonPressed) {
 				// Search field's 'refresh' button has been pressed.

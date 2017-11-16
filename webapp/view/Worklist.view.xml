@@ -9,12 +9,12 @@
 				<items>
 					<IconTabFilter key="all" showAll="true" count="{worklistView>/worklistTableCount}" text="{i18n>WorklistFilterProductsAll}"/>
 					<IconTabSeparator/>
-					<IconTabFilter key="inStock" icon="sap-icon://message-success" iconColor="Positive" count="{worklistView>/inStock}"
-						text="{i18n>WorklistFilterInStock}"/>
-					<IconTabFilter key="shortage" icon="sap-icon://message-warning" iconColor="Critical" count="{worklistView>/shortage}"
-						text="{i18n>WorklistFilterShortage}"/>
-					<IconTabFilter key="outOfStock" icon="sap-icon://message-error" iconColor="Negative" count="{worklistView>/outOfStock}"
-						text="{i18n>WorklistFilterOutOfStock}"/>
+					<IconTabFilter key="idCerrados" icon="sap-icon://message-success" iconColor="Positive" count="{worklistView>/worklistTableCountCerrados}"
+						text="{i18n>WorklistFilterCerrados}"/>
+					<IconTabFilter key="idAbiertos" icon="sap-icon://message-warning" iconColor="Critical" count="{worklistView>/worklistTableCountAbiertos}"
+						text="{i18n>WorklistFilterAbiertos}"/>
+					<IconTabFilter key="idAnulados" icon="sap-icon://message-error" iconColor="Negative" count="{worklistView>/worklistTableCountAnulados}"
+						text="{i18n>WorklistFilterAnulados}"/>
 				</items>
 				<content>
 					<filterBar:FilterBar id="FilterBar" reset="onReset" search="onSearchData" useToolbar="true"  showRestoreButton="true" showGoOnFB="false">
@@ -36,7 +36,7 @@
 							<filterBar:FilterItem name="C" label="Sociedad">
 								<filterBar:control>
 									<MultiComboBox id="SociedadCB" selectionFinish="handleSelectionSociedadFinish" items="{ path: '/SociedadSet', sorter: { path: 'Butxt' } }">
-										<core:Item key="{Bukrs}" text="{Butxt}"/>
+										<core:Item key="{Bukrs}" text="{Bukrs}-{Butxt}"/>
 									</MultiComboBox>
 								</filterBar:control>
 							</filterBar:FilterItem>
@@ -49,8 +49,8 @@
 							</filterBar:FilterItem>
 							<filterBar:FilterItem name="E" label="Proceso">
 								<filterBar:control>
-									<MultiComboBox id="ProcesoCB" selectionFinish="handleSelectionProcesoFinish" items="{ path: '/TorreSet', sorter: { path: 'Destorre' } }">
-										<core:Item key="{Codtorre}" text="{Destorre}"/>
+									<MultiComboBox id="ProcesoCB" selectionFinish="handleSelectionProcesoFinish" items="{ path: '/ProcesoSet', sorter: { path: 'Desdproc' } }">
+										<core:Item key="{Codproc}" text="{Codproc}-{Desdproc}"/>
 									</MultiComboBox>
 								</filterBar:control>
 							</filterBar:FilterItem>
@@ -90,16 +90,28 @@
 							<Column id="Torre" minScreenWidth="Tablet" demandPopin="true">
 								<Text text="{i18n>tableNameCodTorreTitle}"/>
 							</Column>
+							<Column id="DescTorre" minScreenWidth="Tablet" demandPopin="true">
+								<Text text="{i18n>tableNameDesTorreTitle}"/>
+							</Column>
+							<Column id="Proceso" minScreenWidth="Tablet" demandPopin="true">
+								<Text text="{i18n>tableNameProcesoTitle}"/>
+							</Column>
+							<Column id="DescProceso" minScreenWidth="Tablet" demandPopin="true">
+								<Text text="{i18n>tableNameDesProcesoTitle}"/>
+							</Column>
 							<Column id="Statustk" minScreenWidth="Tablet" demandPopin="true">
 								<Text text="{i18n>tableNameStatustkTitle}"/>
 							</Column>
 						</columns>
 						<items>
-							<ColumnListItem type="Navigation" press="onPress">
+							<ColumnListItem type="Navigation" press="onPressRow">
 								<cells>
 									<ObjectIdentifier title="{modelPath>Ticket}"/>
 									<Text text="{modelPath>Bukrs}"/>
 									<Text text="{modelPath>Codtorre}"/>
+									<Text text="{modelPath>Destorre}"/>
+									<Text text="{modelPath>Codproc}"/>
+									<Text text="{modelPath>Desproc}"/>
 									<ObjectNumber number="{modelPath>Desstattk}" state="{ path: 'modelPath>Statustk', formatter: '.formatter.status' }"/>
 								</cells>
 							</ColumnListItem>
