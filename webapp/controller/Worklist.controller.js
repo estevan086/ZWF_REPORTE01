@@ -2,7 +2,7 @@
 /* global numeral:true */
 var gd_FecIni;
 var gd_FecIni;
-
+ 
 var g_servicio_reporte = "/sap/opu/odata/sap/ZSGW_REPORTES_SRV/";
 
 sap.ui.define([
@@ -186,8 +186,6 @@ sap.ui.define([
 
 		ongetData: function(oEvent) {
 
-			debugger;
-
 			this._oListFilterState.aSearch = [];
 			this._oListFilterState.aFilter = [];
 
@@ -243,7 +241,7 @@ sap.ui.define([
 				}
 
 			}
-			//Adiciona Filtros por Proceso
+			//Adiciona Filtros por Proceso 
 			var oCodprocFilters;
 			if (this._selectedProcesoItems.length > 0) {
 				for (i = 0; i < this._selectedProcesoItems.length; i++) {
@@ -294,31 +292,12 @@ sap.ui.define([
 				};
 
 				//Definir modelo del servicio web
-				//	var BindingContext = this.getView().getBindingContext();
-
-				//Se obtiene el contexto para los datos del Aviso Seleccionado
-				//	var sServiceUrl = BindingContext.oModel.sServiceUrl;
-
-				//Definir modelo del servicio web
 				var oModelServiceArchivosCount = new sap.ui.model.odata.ODataModel(g_servicio_reporte, true);
-				// var Url_Servi = "Reporte01Set?$filter=  Sociedad eq '" + gdatos_ticket.Bukrs + "' and Ticket eq '" + gdatos_ticket.Ticket +
-				// 	"' and Pasoproc eq '" + gdatos_ticket.Pasoproc + "'";
-
-				//Definir filtro
-				/*var oFilter ={
-					$filter: ["Bukrs eq 'CEOC' and Bukrs eq 'GDOC' "]
-				};*/
 
 				var Url_Servi = "/Reporte01Set" ;
-				debugger;
-				var _Filters = this._oListFilterState.aSearch.concat(this._oListFilterState.aFilter);
-/*
-				var ld_date = new Date("2015-08-20"); //
-				var valid_date = "2015-08-20T00:00:00" // hardcoded for example
-				var arrParams = ["$filter=Credatetk ge datetime'" + Fecini +"' and Credatetk le datetime'" + Fecfin + "'"];
 				
-				*/
-					
+				var _Filters = this._oListFilterState.aSearch.concat(this._oListFilterState.aFilter);
+
 				var oFilters = oCredatetkFilters;
 				//Valida si Seleccionaron filtros por Sociedad
 				if (oBukrsFilters){
@@ -338,8 +317,6 @@ sap.ui.define([
 				}
 				var arrParams2 = ["$filter=" + oFilters ];
 				
-				//$filter: "(" + filterMatnr + ") and (" + filterMatkl + ") and (" + filterKschl + ")"
-				
 				//Leer datos del ERP
 				var oRead = this.fnReadEntity(oModelServiceArchivosCount, Url_Servi, arrParams2);
 				var iTotalItems = 0 , iTotalItemsCerrados = 0 , iTotalItemsAbiertos = 0 , iTotalItemsAnulados = 0 ;
@@ -350,7 +327,7 @@ sap.ui.define([
 
 							var oItem = oRead.datos.results[i];
 
-							if (oItem.Num === 1) {
+							//if (oItem.Num === 1) {
 								switch (oItem.Statustk) {
 									case "00":
 										oItem.highlight = "Warning";
@@ -370,17 +347,18 @@ sap.ui.define([
 								}
 								iTotalItems ++;
 								oModelData.items.push(oItem);
-							}
+							//}
 
-							oModelDataDetail.items.push(oItem);
+							//oModelDataDetail.items.push(oItem);
 						}
 
 						var oModel = new sap.ui.model.json.JSONModel();
 						oModel.setData(oModelData);
 
-						var list_logwf = this.byId("table");
+						var oTable = this.byId("table");
 
-						list_logwf.setModel(oModel, "modelPath"); 
+						oTable.setModel(oModel, "modelPath"); 
+						//oTable.bindItems(oModel, "modelPath"); 
 
 						var sTitleTotal = this.getResourceBundle().getText("worklistTableCount", [iTotalItems]);
 						this.getModel("worklistView").setProperty("/worklistTableCount", sTitleTotal);

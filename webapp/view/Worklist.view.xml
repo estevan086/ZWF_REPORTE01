@@ -102,9 +102,27 @@
 							<Column id="Statustk" minScreenWidth="Tablet" demandPopin="true">
 								<Text text="{i18n>tableNameStatustkTitle}"/>
 							</Column>
+							<Column id="Desstattk" minScreenWidth="Tablet" demandPopin="true">
+								<Text text="{i18n>tableNameDesstattkTitle}"/>
+							</Column>
+							<Column id="Usercrea" minScreenWidth="Tablet" demandPopin="true">
+								<Text text="{i18n>tableNameUsercreaTitle}"/>
+							</Column>
+							<Column id="Credatetk" minScreenWidth="Tablet" demandPopin="true">
+								<Text text="{i18n>tableNameCredatetkTitle}"/>
+							</Column>
+							<Column id="Cretimetk" minScreenWidth="Tablet" demandPopin="true">
+								<Text text="{i18n>tableNameCretimetkTitle}"/>
+							</Column>
+							<Column id="Upddatetk" minScreenWidth="Tablet" demandPopin="true">
+								<Text text="{i18n>tableNameUpddatetkTitle}"/>
+							</Column>
+							<Column id="Updtimetk" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameUpdtimetkTitle}"/>
+							</Column>
 						</columns>
 						<items>
-							<ColumnListItem type="Navigation" press="onPressRow">
+							<ColumnListItem>
 								<cells>
 									<ObjectIdentifier title="{modelPath>Ticket}"/>
 									<Text text="{modelPath>Bukrs}"/>
@@ -112,7 +130,15 @@
 									<Text text="{modelPath>Destorre}"/>
 									<Text text="{modelPath>Codproc}"/>
 									<Text text="{modelPath>Desproc}"/>
+									<Text text="{modelPath>Statustk}"/>
 									<ObjectNumber number="{modelPath>Desstattk}" state="{ path: 'modelPath>Statustk', formatter: '.formatter.status' }"/>
+									
+									<Text text="{modelPath>Usercrea}"/>
+									<Text text="{path: 'modelPath>Credatetk', formatter: '.formatter.formatDate'}"/>
+									<Text text="{path: 'modelPath>Cretimetk', formatter: '.formatter.formatTime'}"/>
+									<Text text="{path: 'modelPath>Upddatetk', formatter: '.formatter.formatDate'}"/>
+									<Text text="{path: 'modelPath>Updtimetk', formatter: '.formatter.formatTime'}"/>
+									
 								</cells>
 							</ColumnListItem>
 						</items>
