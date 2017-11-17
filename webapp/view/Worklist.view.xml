@@ -98,7 +98,7 @@
 								</layoutData>
 							</Button>
 							<SearchField id="searchField1" tooltip="{i18n>worklistSearchTooltip}" search="onSearch" width="auto" class="sapUiSmallMarginEnd"/>
-							<Button icon="sap-icon://download" press="onDataExport">
+							<Button icon="sap-icon://download" press="onDataExport1">
 								<!--<layoutData>
 									<FlexItemData growFactor="1"/>
 								</layoutData>-->
@@ -226,8 +226,8 @@
 					<ScrollContainer height="525px" horizontal="true" vertical="true" focusable="true">
 						<!--<Table id="table" width="auto"-->
 						<!--<Table id="table" width="500%" items="{modelPath>/items}"-->
-						<Table id="table" width="auto" items="{ path: '/Reporte01Set', sorter: { path: 'Ticket', descending: false } }"
-						
+						<!--<Table id="table" width="auto" items="{ path: '/Reporte01Set', sorter: { path: 'Ticket', descending: false } }"-->
+						<Table id="table" width="500%" items="{modelPath>/items}"
 						 noDataText="{worklistView>/tableNoDataText}"
 							busyIndicatorDelay="{worklistView>/tableBusyDelay}" growing="true" growingScrollToLoad="true" updateFinished="onUpdateFinished">
 							<headerToolbar>
@@ -235,7 +235,7 @@
 									<Title id="tableHeader" text="{worklistView>/worklistTableTitle}"/>
 									<ToolbarSpacer/>
 									<SearchField id="searchFielde" tooltip="{i18n>worklistSearchTooltip}" search="onSearch" width="auto"/>
-									<Button icon="sap-icon://download" press="onDataExport"/>
+									<Button icon="sap-icon://download" press="onDataExport1"/>
 									<Button text="Ejecutar" press="ongetData"/>
 									<ToolbarSpacer/>
 									<!--<Button tooltip="View Settings" icon="sap-icon://drop-down-list" press="handleViewSettingsDialogButtonPressed"/>-->

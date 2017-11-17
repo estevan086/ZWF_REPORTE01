@@ -545,6 +545,68 @@ sap.ui.define([
 			}
 		},
 
+		onDataExport1: sap.m.Table.prototype.exportData || function(oEvent) {
+		
+			var oTable = this.byId("table");
+				
+			var aColumns = oTable.getColumns();
+				var aItems = oTable.getItems();
+				var aTemplate = [];
+				for (var i = 0; i < aColumns.length; i++) {
+					var oColumn = {
+						name: aColumns[i].getHeader().getText(),
+						template: {
+							content: {
+								path: null
+							}
+						}
+					};
+					if (aItems.length > 0) {
+						if (aItems[0].getCells()[i].mProperties.text) {
+								oColumn.template.content.path = aItems[0].getCells()[i].getBinding("text").getPath();
+						}
+						else if (aItems[0].getCells()[i].mProperties.title){
+								oColumn.template.content.path = aItems[0].getCells()[i].getBinding("title").getPath();
+						}
+						else if (aItems[0].getCells()[i].mProperties.number){
+								oColumn.template.content.path = aItems[0].getCells()[i].getBinding("number").getPath();
+						}
+					
+					}
+					aTemplate.push(oColumn);
+			}
+			var oExport = new Export({
+
+				// Type that will be used to generate the content. Own ExportType's can be created to support other formats
+				exportType: new ExportTypeCSV({
+					// separatorChar: ";"
+					separatorChar: "\t",
+					mimeType: "application/vnd.ms-excel",
+					charset: "utf-8",
+					fileExtension: "xls"
+				}),
+
+				// Pass in the model created above
+				models: oTable.getModel(),
+
+				// binding information for the rows aggregation
+				rows: {
+					path: "/"
+				},
+
+				// column definitions with column name and binding info for the content
+				columns: aTemplate
+			
+			});
+			console.log(oExport);
+			// download exported file
+			oExport.saveFile().catch(function(oError) {
+				MessageBox.error("Error when downloading data. Browser might not be supported!\n\n" + oError);
+			}).then(function() {
+				oExport.destroy();
+			});
+		},
+		
 		onDataExport: sap.m.Table.prototype.exportData || function(oEvent) {
 
 			var oExport = new Export({
@@ -567,18 +629,18 @@ sap.ui.define([
 				},
 
 				// column definitions with column name and binding info for the content
-
-				columns: [{
-					name: "Num",
-					template: {
-						content: "{Num}"
-					}
-				}, {
-					name: "Ticket",
-					template: {
-						content: "{Ticket}"
-					}
-					
+				columns: this.byId("table").getModel("modelPath").getData().items
+				// columns: [{
+				// 	name: "Num",
+				// 	template: {
+				// 		content: "{Num}"
+				// 	}
+				// }, {
+				// 	name: "Ticket",
+				// 	template: {
+				// 		content: "{Ticket}"
+				// 	}
+				// }]	
 				/*}, {
 					name: "Sociedad",
 					template: {
@@ -759,7 +821,7 @@ sap.ui.define([
 					template: {
 						content: "{Documento}"
 					}*/
-				}]
+				// }]
 			});
 			console.log(oExport);
 			// download exported file
