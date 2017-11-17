@@ -1,5 +1,5 @@
-<mvc:View controllerName="com.controller.Worklist" xmlns="sap.m" xmlns:table="sap.ui.table" xmlns:mvc="sap.ui.core.mvc"
-	xmlns:core="sap.ui.core" xmlns:semantic="sap.f.semantic" xmlns:footerbar="sap.ushell.ui.footerbar" xmlns:filterBar="sap.ui.comp.filterbar">
+<mvc:View xmlns="sap.m" xmlns:table="sap.ui.table" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:semantic="sap.f.semantic"
+	xmlns:footerbar="sap.ushell.ui.footerbar" xmlns:filterBar="sap.ui.comp.filterbar" controllerName="com.controller.Worklist">
 	<semantic:SemanticPage id="page" headerPinnable="false" toggleHeaderOnTitleClick="false">
 		<semantic:titleHeading>
 			<Title text="{i18n>worklistTitle}"/>
@@ -17,20 +17,21 @@
 						text="{i18n>WorklistFilterAnulados}"/>
 				</items>
 				<content>
-					<filterBar:FilterBar id="FilterBar" reset="onReset" search="onSearchData" useToolbar="true"  showRestoreButton="true" showGoOnFB="false">
+					<filterBar:FilterBar id="FilterBar" reset="onReset" search="onSearchData" useToolbar="true" showRestoreButton="true" showGoOnFB="false">
 						<filterBar:filterItems>
+							<filterBar:FilterItem name="FNumTicket" label="Num. Ticket">
+								<filterBar:control>
+									<Input id="INumTicket" class="sapUiSmallMarginBottom" type="Text" placeholder="Num. Ticket..." maxLength="10"/>
+								</filterBar:control>
+							</filterBar:FilterItem>
 							<filterBar:FilterItem name="A" label="Fecha Inicio">
 								<filterBar:control>
-									<DatePicker id="datePickerfecini" 
-									valueFormat="yyyy-MM-ddTHH:mm:ss" 
-									change="handleDateChangefecini"/>
+									<DatePicker id="datePickerfecini" valueFormat="yyyy-MM-ddTHH:mm:ss" change="handleDateChangefecini"/>
 								</filterBar:control>
 							</filterBar:FilterItem>
 							<filterBar:FilterItem name="B" label="Fecha Fin">
 								<filterBar:control>
-									<DatePicker id="datePickerfecfin"
-									valueFormat="yyyy-MM-ddTHH:mm:ss"
-									change="handleDateChangefecfin"/>
+									<DatePicker id="datePickerfecfin" valueFormat="yyyy-MM-ddTHH:mm:ss" change="handleDateChangefecfin"/>
 								</filterBar:control>
 							</filterBar:FilterItem>
 							<filterBar:FilterItem name="C" label="Sociedad">
@@ -54,95 +55,354 @@
 									</MultiComboBox>
 								</filterBar:control>
 							</filterBar:FilterItem>
+							<filterBar:FilterItem name="FTorreSubpr" label="Torre Subproceso">
+								<filterBar:control>
+									<MultiComboBox id="TorreSubproCB" selectionFinish="handleSelectionTorreSubprFinish"
+										items="{ path: '/TorreSet', sorter: { path: 'Destorre' } }">
+										<core:Item key="{Codtorre}" text="{Destorre}"/>
+									</MultiComboBox>
+								</filterBar:control>
+							</filterBar:FilterItem>
+							<filterBar:FilterItem name="FSubproceso" label="Subproceso">
+								<filterBar:control>
+									<MultiComboBox id="SubprocesoCB" selectionFinish="handleSelectionSubprocesoFinish"
+										items="{ path: '/ProcesoSet', sorter: { path: 'Desdproc' } }">
+										<core:Item key="{Codproc}" text="{Codproc}-{Desdproc}"/>
+									</MultiComboBox>
+								</filterBar:control>
+							</filterBar:FilterItem>
 							<filterBar:FilterItem name="F" label="Status">
 								<filterBar:control>
-									<MultiComboBox  selectionFinish="handleSelectionStatusFinish" items="{cbState>/items}"> 
+									<MultiComboBox selectionFinish="handleSelectionStatusFinish" items="{cbState>/items}">
 										<core:Item key="{cbState>Code}" text="{cbState>Name}"/>
 									</MultiComboBox>
 								</filterBar:control>
 							</filterBar:FilterItem>
-							
+							<filterBar:FilterItem name="FUsuarioCre" label="Usu. Cre. TK">
+								<filterBar:control>
+									<Input id="IUsuCreTicket" class="sapUiSmallMarginBottom" type="Text" placeholder="Usu. Cre TK..." maxLength="15"/>
+								</filterBar:control>
+							</filterBar:FilterItem>
+							<filterBar:FilterItem name="FUsuarioRP" label="Usu. Resp. Paso">
+								<filterBar:control>
+									<Input id="IUsuRespPaso" class="sapUiSmallMarginBottom" type="Text" placeholder="Usu. Resp Paso..." maxLength="15"/>
+								</filterBar:control>
+							</filterBar:FilterItem>
 						</filterBar:filterItems>
 					</filterBar:FilterBar>
-					<!--<Table id="table" width="auto"-->
-					<!--<Table id="table" width="auto" items="{ path: '/Reporte01Set', sorter: { path: 'Ticket', descending: false } }" -->
-					<Table id="table" width="auto" items="{modelPath>/items}"
-						noDataText="{worklistView>/tableNoDataText}" busyIndicatorDelay="{worklistView>/tableBusyDelay}" growing="true" growingScrollToLoad="true"
-						updateFinished="onUpdateFinished">
-						<headerToolbar>
-							<Toolbar>
-								<Title id="tableHeader" text="{worklistView>/worklistTableTitle}"/>
-								<ToolbarSpacer/>
-								<SearchField id="searchField" tooltip="{i18n>worklistSearchTooltip}" search="onSearch" width="auto"></SearchField>
-								<Button icon="sap-icon://download" press="onDataExport"/>
-								<Button text="Ejecutar" press="ongetData"/>
-								<ToolbarSpacer/>
-								<Button tooltip="View Settings" icon="sap-icon://drop-down-list" press="handleViewSettingsDialogButtonPressed" />
-							</Toolbar>
-						</headerToolbar>
-						<columns>
-							<Column id="nameColumn">
-								<Text text="{i18n>tableNameTicketTitle}" id="nameColumnTitle"/>
-							</Column>
-							<Column id="Sociedad" minScreenWidth="Tablet" demandPopin="true">
-								<Text text="{i18n>tableNameBukrsTitle}"/>
-							</Column>
-							<Column id="Torre" minScreenWidth="Tablet" demandPopin="true">
-								<Text text="{i18n>tableNameCodTorreTitle}"/>
-							</Column>
-							<Column id="DescTorre" minScreenWidth="Tablet" demandPopin="true">
-								<Text text="{i18n>tableNameDesTorreTitle}"/>
-							</Column>
-							<Column id="Proceso" minScreenWidth="Tablet" demandPopin="true">
-								<Text text="{i18n>tableNameProcesoTitle}"/>
-							</Column>
-							<Column id="DescProceso" minScreenWidth="Tablet" demandPopin="true">
-								<Text text="{i18n>tableNameDesProcesoTitle}"/>
-							</Column>
-							<Column id="Statustk" minScreenWidth="Tablet" demandPopin="true">
-								<Text text="{i18n>tableNameStatustkTitle}"/>
-							</Column>
-							<Column id="Desstattk" minScreenWidth="Tablet" demandPopin="true">
-								<Text text="{i18n>tableNameDesstattkTitle}"/>
-							</Column>
-							<Column id="Usercrea" minScreenWidth="Tablet" demandPopin="true">
-								<Text text="{i18n>tableNameUsercreaTitle}"/>
-							</Column>
-							<Column id="Credatetk" minScreenWidth="Tablet" demandPopin="true">
-								<Text text="{i18n>tableNameCredatetkTitle}"/>
-							</Column>
-							<Column id="Cretimetk" minScreenWidth="Tablet" demandPopin="true">
-								<Text text="{i18n>tableNameCretimetkTitle}"/>
-							</Column>
-							<Column id="Upddatetk" minScreenWidth="Tablet" demandPopin="true">
-								<Text text="{i18n>tableNameUpddatetkTitle}"/>
-							</Column>
-							<Column id="Updtimetk" minScreenWidth="Tablet" demandPopin="true">
-									<Text text="{i18n>tableNameUpdtimetkTitle}"/>
-							</Column>
-						</columns>
+					<FlexBox renderType="Bare">
 						<items>
-							<ColumnListItem>
-								<cells>
-									<ObjectIdentifier title="{modelPath>Ticket}"/>
-									<Text text="{modelPath>Bukrs}"/>
-									<Text text="{modelPath>Codtorre}"/>
-									<Text text="{modelPath>Destorre}"/>
-									<Text text="{modelPath>Codproc}"/>
-									<Text text="{modelPath>Desproc}"/>
-									<Text text="{modelPath>Statustk}"/>
-									<ObjectNumber number="{modelPath>Desstattk}" state="{ path: 'modelPath>Statustk', formatter: '.formatter.status' }"/>
-									
-									<Text text="{modelPath>Usercrea}"/>
-									<Text text="{path: 'modelPath>Credatetk', formatter: '.formatter.formatDate'}"/>
-									<Text text="{path: 'modelPath>Cretimetk', formatter: '.formatter.formatTime'}"/>
-									<Text text="{path: 'modelPath>Upddatetk', formatter: '.formatter.formatDate'}"/>
-									<Text text="{path: 'modelPath>Updtimetk', formatter: '.formatter.formatTime'}"/>
-									
-								</cells>
-							</ColumnListItem>
+							<Button text="Ejecutar" press="ongetData" type="Emphasized" class="sapUiSmallMarginEnd">
+								<layoutData>
+									<FlexItemData growFactor="1"/>
+								</layoutData>
+							</Button>
+							<SearchField id="searchField1" tooltip="{i18n>worklistSearchTooltip}" search="onSearch" width="auto" class="sapUiSmallMarginEnd"/>
+							<Button icon="sap-icon://download" press="onDataExport">
+								<!--<layoutData>
+									<FlexItemData growFactor="1"/>
+								</layoutData>-->
+							</Button>
 						</items>
-					</Table>
+					</FlexBox>
+					<!--<Table showNoData="false" width="500%">
+						<columns>
+								<Column id="Num1">
+									<Text text="{i18n>tableNameNumTitle}"/>
+								</Column>
+								<Column id="Ticket1" demandPopin="false">
+									<Text text="{i18n>tableNameTicketTitle}"/>
+								</Column>
+								<Column id="Sociedad1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameBukrsTitle}"/>
+								</Column>
+								<Column id="Torre1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCodTorreTitle}"/>
+								</Column>
+								<Column id="DescTorre1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDesTorreTitle}"/>
+								</Column>
+								<Column id="Proceso1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameProcesoTitle}"/>
+								</Column>
+								<Column id="DescProceso1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDesProcesoTitle}"/>
+								</Column>
+								<Column id="Statustk1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameStatustkTitle}"/>
+								</Column>
+								<Column id="Desstattk1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDesstattkTitle}"/>
+								</Column>
+								<Column id="Usercrea1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameUsercreaTitle}"/>
+								</Column>
+								<Column id="Credatetk1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCredatetkTitle}"/>
+								</Column>
+								<Column id="Cretimetk1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCretimetkTitle}"/>
+								</Column>
+								<Column id="Upddatetk1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameUpddatetkTitle}"/>
+								</Column>
+								<Column id="Updtimetk1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameUpdtimetkTitle}"/>
+								</Column>
+								<Column id="Despostip1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDespostipTitle}"/>
+								</Column>
+								<Column id="Tipp1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameTippTitle}"/>
+								</Column>
+								<Column id="Pasoproc1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNamePasoprocTitle}"/>
+								</Column>
+								<Column id="Txtpaso1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameTxtpasoTitle}"/>
+								</Column>
+								<Column id="Status1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameStatusTitle}"/>
+								</Column>
+								<Column id="Desstat1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDesstatTitle}"/>
+								</Column>
+								<Column id="Codtorrehijo1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCodtorrehijoTitle}"/>
+								</Column>
+								<Column id="Destorrehijo1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDestorrehijoTitle}"/>
+								</Column>
+								<Column id="Codprochijo1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCodprochijoTitle}"/>
+								</Column>
+								<Column id="Desprochijo1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDesprochijoTitle}"/>
+								</Column>
+								<Column id="Opcbifur1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameOpcbifurTitle}"/>
+								</Column>
+								<Column id="Txopbif1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameTxopbifTitle}"/>
+								</Column>
+								<Column id="Cargos1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCargosTitle}"/>
+								</Column>
+								<Column id="Descargo1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDescargoTitle}"/>
+								</Column>
+								<Column id="Creuser1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCreuserTitle}"/>
+								</Column>
+								<Column id="Nomuser1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameNomuserTitle}"/>
+								</Column>
+								<Column id="Zdate1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameZdateTitle}"/>
+								</Column>
+								<Column id="Time1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameTimeTitle}"/>
+								</Column>
+								<Column id="Upddate1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameUpddateTitle}"/>
+								</Column>
+								<Column id="Updtime1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameUpdtimeTitle}"/>
+								</Column>
+								<Column id="Tipcomp1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameTipcompTitle}"/>
+								</Column>
+								<Column id="Waers1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameWaersTitle}"/>
+								</Column>
+								<Column id="Valcomp1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameValcompTitle}"/>
+								</Column>
+								<Column id="Documento1" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDocumentoTitle}"/>
+								</Column>
+							</columns>
+					</Table>-->
+					<ScrollContainer height="525px" horizontal="true" vertical="true" focusable="true">
+						<!--<Table id="table" width="auto"-->
+						<!--<Table id="table" width="500%" items="{modelPath>/items}"-->
+						<Table id="table" width="auto" items="{ path: '/Reporte01Set', sorter: { path: 'Ticket', descending: false } }"
+						
+						 noDataText="{worklistView>/tableNoDataText}"
+							busyIndicatorDelay="{worklistView>/tableBusyDelay}" growing="true" growingScrollToLoad="true" updateFinished="onUpdateFinished">
+							<headerToolbar>
+								<Toolbar>
+									<Title id="tableHeader" text="{worklistView>/worklistTableTitle}"/>
+									<ToolbarSpacer/>
+									<SearchField id="searchFielde" tooltip="{i18n>worklistSearchTooltip}" search="onSearch" width="auto"/>
+									<Button icon="sap-icon://download" press="onDataExport"/>
+									<Button text="Ejecutar" press="ongetData"/>
+									<ToolbarSpacer/>
+									<!--<Button tooltip="View Settings" icon="sap-icon://drop-down-list" press="handleViewSettingsDialogButtonPressed"/>-->
+								</Toolbar>
+							</headerToolbar>
+							<columns>
+								<Column id="Num">
+									<Text text="{i18n>tableNameNumTitle}"/>
+								</Column>
+								<Column id="Ticket" demandPopin="false">
+									<Text text="{i18n>tableNameTicketTitle}"/>
+								</Column>
+								<Column id="Sociedad" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameBukrsTitle}"/>
+								</Column>
+								<Column id="Torre" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCodTorreTitle}"/>
+								</Column>
+								<Column id="DescTorre" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDesTorreTitle}"/>
+								</Column>
+								<Column id="Proceso" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameProcesoTitle}"/>
+								</Column>
+								<Column id="DescProceso" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDesProcesoTitle}"/>
+								</Column>
+								<Column id="Statustk" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameStatustkTitle}"/>
+								</Column>
+								<Column id="Desstattk" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDesstattkTitle}"/>
+								</Column>
+								<Column id="Usercrea" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameUsercreaTitle}"/>
+								</Column>
+								<Column id="Credatetk" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCredatetkTitle}"/>
+								</Column>
+								<Column id="Cretimetk" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCretimetkTitle}"/>
+								</Column>
+								<Column id="Upddatetk" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameUpddatetkTitle}"/>
+								</Column>
+								<Column id="Updtimetk" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameUpdtimetkTitle}"/>
+								</Column>
+								<Column id="Despostip" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDespostipTitle}"/>
+								</Column>
+								<Column id="Tipp" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameTippTitle}"/>
+								</Column>
+								<Column id="Pasoproc" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNamePasoprocTitle}"/>
+								</Column>
+								<Column id="Txtpaso" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameTxtpasoTitle}"/>
+								</Column>
+								<Column id="Status" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameStatusTitle}"/>
+								</Column>
+								<Column id="Desstat" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDesstatTitle}"/>
+								</Column>
+								<Column id="Codtorrehijo" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCodtorrehijoTitle}"/>
+								</Column>
+								<Column id="Destorrehijo" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDestorrehijoTitle}"/>
+								</Column>
+								<Column id="Codprochijo" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCodprochijoTitle}"/>
+								</Column>
+								<Column id="Desprochijo" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDesprochijoTitle}"/>
+								</Column>
+								<Column id="Opcbifur" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameOpcbifurTitle}"/>
+								</Column>
+								<Column id="Txopbif" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameTxopbifTitle}"/>
+								</Column>
+								<Column id="Cargos" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCargosTitle}"/>
+								</Column>
+								<Column id="Descargo" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDescargoTitle}"/>
+								</Column>
+								<Column id="Creuser" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameCreuserTitle}"/>
+								</Column>
+								<Column id="Nomuser" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameNomuserTitle}"/>
+								</Column>
+								<Column id="Zdate" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameZdateTitle}"/>
+								</Column>
+								<Column id="Time" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameTimeTitle}"/>
+								</Column>
+								<Column id="Upddate" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameUpddateTitle}"/>
+								</Column>
+								<Column id="Updtime" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameUpdtimeTitle}"/>
+								</Column>
+								<Column id="Tipcomp" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameTipcompTitle}"/>
+								</Column>
+								<Column id="Waers" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameWaersTitle}"/>
+								</Column>
+								<Column id="Valcomp" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameValcompTitle}"/>
+								</Column>
+								<Column id="Documento" minScreenWidth="Tablet" demandPopin="true">
+									<Text text="{i18n>tableNameDocumentoTitle}"/>
+								</Column>
+							</columns>
+							<items>
+								<ColumnListItem>
+									<cells>
+										<Text text="{modelPath>Num}"/>
+										<ObjectIdentifier title="{modelPath>Ticket}"/>
+										<Text text="{modelPath>Bukrs}"/>
+										<Text text="{modelPath>Codtorre}"/>
+										<Text text="{modelPath>Destorre}"/>
+										<Text text="{modelPath>Codproc}"/>
+										<Text text="{modelPath>Desproc}"/>
+										<Text text="{modelPath>Statustk}"/>
+										<ObjectNumber number="{modelPath>Desstattk}" state="{ path: 'modelPath>Statustk', formatter: '.formatter.status' }"/>
+										<Text text="{modelPath>Usercrea}"/>
+										<Text text="{path: 'modelPath>Credatetk', formatter: '.formatter.formatDate'}"/>
+										<Text text="{path: 'modelPath>Cretimetk', formatter: '.formatter.formatTime'}"/>
+										<Text text="{path: 'modelPath>Upddatetk', formatter: '.formatter.formatDate'}"/>
+										<Text text="{path: 'modelPath>Updtimetk', formatter: '.formatter.formatTime'}"/>
+										<Text text="{modelPath>Despostip}"/>
+										<Text text="{modelPath>Tipp}"/>
+										<Text text="{modelPath>Pasoproc}"/>
+										<Text text="{modelPath>Txtpaso}"/>
+										<Text text="{modelPath>Status}"/>
+										<ObjectNumber number="{modelPath>Desstat}" state="{ path: 'modelPath>Status', formatter: '.formatter.status' }"/>
+										<Text text="{modelPath>Codtorrehijo}"/>
+										<Text text="{modelPath>Destorrehijo}"/>
+										<Text text="{modelPath>Codprochijo}"/>
+										<Text text="{modelPath>Desprochijo}"/>
+										<Text text="{modelPath>Opcbifur}"/>
+										<Text text="{modelPath>Txopbif}"/>
+										<Text text="{modelPath>Cargo}"/>
+										<Text text="{modelPath>Descargo}"/>
+										<Text text="{modelPath>Creuser}"/>
+										<Text text="{modelPath>Nomuser}"/>
+										<Text text="{path: 'modelPath>Zdate', formatter: '.formatter.formatDate'}"/>
+										<Text text="{path: 'modelPath>Time', formatter: '.formatter.formatTime'}"/>
+										<Text text="{path: 'modelPath>Upddate', formatter: '.formatter.formatDate'}"/>
+										<Text text="{path: 'modelPath>Updtime', formatter: '.formatter.formatTime'}"/>
+										<Text text="{modelPath>Tipcomp}"/>
+										<Text text="{modelPath>Waers}"/>
+										<Text text="{modelPath>Valcomp}"/>
+										<Text text="{modelPath>Documento}"/>
+									</cells>
+								</ColumnListItem>
+							</items>
+						</Table>
+					</ScrollContainer>
 				</content>
 			</IconTabBar>
 		</semantic:content>

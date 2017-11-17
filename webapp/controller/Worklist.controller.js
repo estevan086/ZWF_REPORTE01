@@ -559,7 +559,7 @@ sap.ui.define([
 				}),
 
 				// Pass in the model created above
-				models: this.getView().getModel(),
+				models: this.byId("table").getModel(),
 
 				// binding information for the rows aggregation
 				rows: {
@@ -569,23 +569,199 @@ sap.ui.define([
 				// column definitions with column name and binding info for the content
 
 				columns: [{
+					name: "Num",
+					template: {
+						content: "{Num}"
+					}
+				}, {
 					name: "Ticket",
 					template: {
 						content: "{Ticket}"
 					}
-				}, {
+					
+				/*}, {
 					name: "Sociedad",
 					template: {
 						content: "{Bukrs}"
 					}
 				}, {
-					name: "Torre",
+					name: "Cod Torre",
 					template: {
 						content: "{Codtorre}"
 					}
+				}, {
+					name: "Des Torre",
+					template: {
+						content: "{Destorre}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Codproc}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Desproc}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Statustk}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Desstattk}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Usercrea}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Credatetk}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Cretimetk}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Upddatetk}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Updtimetk}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Despostip}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Tipp}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Pasoproc}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Txtpaso}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Status}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Desstat}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Codtorrehijo}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Destorrehijo}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Codprochijo}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Desprochijo}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Opcbifur}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Txopbif}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Cargo}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Descargo}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Creuser}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Nomuser}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Zdate}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Time}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Upddate}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Updtime}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Tipcomp}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Waers}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Valcomp}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Documento}"
+					}*/
 				}]
 			});
-
+			console.log(oExport);
 			// download exported file
 			oExport.saveFile().catch(function(oError) {
 				MessageBox.error("Error when downloading data. Browser might not be supported!\n\n" + oError);
