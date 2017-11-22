@@ -1,0 +1,16 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<SelectDialog
+		id="lstUsuariosCre"
+		title="{i18n>titleUsuariosCre}"
+		class="sapUiPopupWithPadding"
+		items="{ path : '/UsuariosSet' }"
+		liveChange="fnBuscarUsuariosCre"
+		confirm="fnSeleccionarUsuarioCre"
+		cancel="fnCloseFragment">
+		<StandardListItem
+			title="{Bname}"
+			description="{NameText}" />
+	</SelectDialog>
+</core:FragmentDefinition>

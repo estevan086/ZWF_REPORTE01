@@ -82,6 +82,60 @@ sap.ui.define([
 			pModelo.read(pEntidad, null, pFilters, false, fnSucess, fnError);
 
 			return oMensaje;
+		},
+		
+		
+		
+		status: function(sStatus) {
+			if (sStatus === "00") {
+				return "Warning";
+			} else if (sStatus === "10") {
+				return "Success";
+			} else if (sStatus === "15") {
+				return "Error";
+			} else {
+				return "None";
+			}
+		},
+		
+				/**
+		 * Abrir Fragment.
+		 * @public
+		 * @param {string} pFragment es Ruta.NombreFragment a abrir
+		 */
+		fnOpenDialog: function(sRutaFragment) {
+			// var ruta = "com.alfa.fragment.PedCrossSelling";
+			// var ruta = "com.alfa.fragment.Clientes";
+			this.oFragment = new Object();
+			this.oFragment.view = null;
+
+			this.fnLoadDialog(sRutaFragment, this.oFragment);
+			this.oFragment.view.open();
+		},
+				/**
+		 * Instanciar Fragment.
+		 * @public
+		 * @param {string} sRutaFragment es Ruta.NombreFragment a instanciar
+		 * @param {object} objFragment Objeto global contenedor del fragment
+		 * @returns {object}
+		 */
+		fnLoadDialog: function(sRutaFragment, objFragment) {
+			if (objFragment.view) {
+				return;
+			}
+			// associate controller with the fragment
+			objFragment.view = sap.ui.xmlfragment(sRutaFragment, this);
+			this.getView().addDependent(objFragment.view);
+		},
+		
+		/**
+		 * Cerrar Fragment.
+		 * @public
+		 * @param {object} objFragment Objeto global contenedor del fragment
+		 */
+		fnCloseDialog: function(objFragment) {
+			//objFragment.view.close();
+			objFragment.view.destroy();
 		}
 
 		});
