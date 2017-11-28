@@ -1,0 +1,8 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<BusyDialog
+		id="idBusyDialog"
+		title="Por favor espere..."
+		text=""/>
+</core:FragmentDefinition>

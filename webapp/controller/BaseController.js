@@ -84,21 +84,47 @@ sap.ui.define([
 			return oMensaje;
 		},
 		
-		
-		
-		status: function(sStatus) {
-			if (sStatus === "00") {
-				return "Warning";
-			} else if (sStatus === "10") {
-				return "Success";
-			} else if (sStatus === "15") {
-				return "Error";
-			} else {
-				return "None";
-			}
+		//Dialogos "Cargando"
+		/**
+		 * Mostrar el fragment de Clientes
+		 * @public
+		 */
+		fnOpenBusyDialog: function() {
+			this.fnOpenDialog("com.view.fragment.BusyDialog");
+		},
+		/**
+		 * Cerrar el fragment de Clientes
+		 * @public
+		 */
+		fnCloseBusyDialog: function() {
+			this.fnCloseDialog(this.oFragment);
+			delete this.oFragment;
 		},
 		
-				/**
+		
+		fnReadEntityAsync: function(pModelo, pEntidad, pFilters) {
+			var vMensaje = null;
+			var oMensaje = {};
+
+			var fnSucess = function(data, response) {
+				oMensaje.tipo = "S";
+				oMensaje.datos = data;
+			};
+			var fnError = function(e) {
+				vMensaje = JSON.parse(e.response.body);
+				vMensaje = vMensaje.error.message.value;
+
+				oMensaje.tipo = "E";
+				oMensaje.msjs = vMensaje;
+			};
+
+
+
+			pModelo.read(pEntidad, null, pFilters, false, fnSucess, fnError, true);
+
+			return oMensaje;
+		},		
+		/**
 		 * Abrir Fragment.
 		 * @public
 		 * @param {string} pFragment es Ruta.NombreFragment a abrir
@@ -112,7 +138,7 @@ sap.ui.define([
 			this.fnLoadDialog(sRutaFragment, this.oFragment);
 			this.oFragment.view.open();
 		},
-				/**
+		/**
 		 * Instanciar Fragment.
 		 * @public
 		 * @param {string} sRutaFragment es Ruta.NombreFragment a instanciar

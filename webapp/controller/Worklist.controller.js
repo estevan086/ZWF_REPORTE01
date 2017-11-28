@@ -5,6 +5,32 @@ var gd_FecIni;
 
 var g_servicio_reporte = "/sap/opu/odata/sap/ZSGW_REPORTES_SRV/";
 
+// var testJson = [{
+// 	"name": "Tony Peña",
+// 	"city": "New York",
+// 	"country": "United States",
+// 	"birthdate": "1978-03-15",
+// 	"amount": 42
+
+// }, {
+// 	"name": "Ζαλώνης Thessaloniki",
+// 	"city": "Athens",
+// 	"country": "Greece",
+// 	"birthdate": "1987-11-23",
+// 	"amount": 42
+// }];
+
+// // Simple type mapping; dates can be hard
+// // and I would prefer to simply use `datevalue`
+// // ... you could even add the formula in here.
+// var testTypes = {
+// 	"name": "String",
+// 	"city": "String",
+// 	"country": "String",
+// 	"birthdate": "String",
+// 	"amount": "Number"
+// };
+
 sap.ui.define([
 	"com/controller/BaseController",
 	"sap/ui/model/json/JSONModel",
@@ -14,19 +40,20 @@ sap.ui.define([
 	"sap/ui/model/FilterOperator",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
-	"com/model/formatter",
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/util/Export",
 	"sap/ui/core/util/ExportTypeCSV",
 	'sap/ui/model/Sorter',
 	'jquery.sap.global',
-	'sap/ui/core/Fragment'
-], function(BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox, MessageToast, Formatter, Controller,
+	'sap/ui/core/Fragment',
+	"sap/ui/core/BusyIndicator"
+], function(BaseController, JSONModel, History, formatter, Filter, FilterOperator, MessageBox, MessageToast, Controller,
 	Export,
 	ExportTypeCSV,
 	Sorter,
 	jQuery,
-	Fragment) {
+	Fragment,
+	BusyIndicator) {
 	"use strict";
 
 	return BaseController.extend("com.controller.Worklist", {
@@ -50,6 +77,7 @@ sap.ui.define([
 				iOriginalBusyDelay,
 				oTable = this.byId("table");
 
+			this.oEventgetData = "";
 			this.oSF = this.byId("searchFieldUsuCre");
 
 			// Put down worklist table's original value for busy indicator delay,
@@ -64,6 +92,13 @@ sap.ui.define([
 
 				]
 			};
+
+			this.oModelData = {
+				"items": [
+
+				]
+			};
+
 			oTableModel = new JSONModel();
 			oTableModel.setData(oModelTable);
 
@@ -129,6 +164,15 @@ sap.ui.define([
 				// Restore original busy indicator delay for worklist's table
 				oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
 			});
+
+			this.oData = {
+				//items es una propiedad del objeto oData
+				items: []
+			};
+			//creamos el modelo JSON y le asignamos el objeto OData
+			var oModel = new JSONModel(this.oData);
+			//asignamos el modelo JSON oModel a la vista a la que esta relacionada el controlar en este caso App.view
+			this.getView().byId("table").setModel(oModel);
 		},
 
 		/* =========================================================== */
@@ -196,6 +240,36 @@ sap.ui.define([
 		},
 
 		ongetData: function(oEvent) {
+			// var dialog = new sap.m.BusyDialog({
+			// 							text:'Loading Data...'
+			// 						 });
+			// dialog.open();
+
+			// BusyIndicator.show();
+			//...
+
+			// var busyDialog = this.getView().byId("BusyDialog");
+			// busyDialog.setBusyIndicatorDelay(0);
+			// busyDialog.setVisible(true);
+			// busyDialog.open();
+			//this.oEventgetData = oEvent;
+			this.fnOpenBusyDialog();
+			sap.ui.getCore().byId("idBusyDialog").setText("Cargando datos...");
+
+			
+			var that = this;
+			jQuery.sap.delayedCall(500, this, function () {
+				this.ongetOData();
+			});
+			
+			// busyDialog.close();
+			// busyDialog.setVisible(false);
+
+			// dialog.close();
+			// BusyIndicator.hide();
+		},
+
+		ongetOData: function(oEvent) {
 
 			this._oListFilterState.aSearch = [];
 			this._oListFilterState.aFilter = [];
@@ -213,8 +287,9 @@ sap.ui.define([
 			//Valida y Asigna Filtro Rango de Fechas
 			if (!Fecini || !Fecfin) {
 				//_oListFilterState = [new Filter("FECHA_I", FilterOperator.Contains, Fecini)];
-				//	MessageBox.warning('Debe ingresar el Rango de Fechas', null, "Mensaje del sistema", "OK", null);
-				//	return;
+				MessageBox.warning('Debe ingresar el Rango de Fechas', null, "Mensaje del sistema", "OK", null);
+				this.fnCloseBusyDialog(); //Cerrar Cargando
+				return;
 			} else {
 				this._oListFilterState.aFilter.push(new Filter("Credatetk", FilterOperator.BT, Fecini, Fecfin));
 				var oCredatetkFilters = "Credatetk ge datetime'" + Fecini + "' and Credatetk le datetime'" + Fecfin + "'";
@@ -225,7 +300,7 @@ sap.ui.define([
 			var oTicketFilters;
 			if (NumTicket !== "") {
 				oTicketFilters = " Ticket eq '" + NumTicket + "'";
-					this._oListFilterState.aFilter = [new Filter("Ticket", FilterOperator.Contains, NumTicket)];
+				this._oListFilterState.aFilter = [new Filter("Ticket", FilterOperator.Contains, NumTicket)];
 			}
 
 			var i = 0;
@@ -312,7 +387,7 @@ sap.ui.define([
 				}
 
 			}
-			
+
 			//Usuario Creador
 			var UsuCre = this.byId("IUsuCreTicket").mProperties.value;
 			var oUsuCreFilters;
@@ -320,49 +395,43 @@ sap.ui.define([
 				oUsuCreFilters = " Usercrea eq '" + UsuCre + "'";
 				this._oListFilterState.aFilter = [new Filter("Usercrea", FilterOperator.Contains, UsuCre)];
 			}
-			
-						//Usuario Creador
+
+			//Usuario Creador
 			var UsuRes = this.byId("IUsuRespPaso").mProperties.value;
-			var oUsuResFilters; 
+			var oUsuResFilters;
 			if (UsuRes !== "") {
 				oUsuResFilters = " Creuser eq '" + UsuRes + "'";
 				this._oListFilterState.aFilter = [new Filter("Creuser", FilterOperator.Contains, UsuRes)];
 			}
 
-			var sQuery = oEvent.getParameter("query");
+			// var sQuery = oEvent.getParameter("query");
 
-			if (sQuery && sQuery.length > 0) {
-				this._oListFilterState.aSearch = [new Filter("Ticket", FilterOperator.Contains, sQuery)];
-			}
+			// if (sQuery && sQuery.length > 0) {
+			// 	this._oListFilterState.aSearch = [new Filter("Ticket", FilterOperator.Contains, sQuery)];
+			// }
 
 			if (this._oListFilterState.aFilter.length > 0) {
 				//this._applySearchParam();
 
-				var oModelData = {
-					"items": [
+				// var oModelDataDetail = {
+				// 	"items": [
 
-					]
-				};
-
-				var oModelDataDetail = {
-					"items": [
-
-					]
-				};
+				// 	]
+				// };
 
 				//Definir modelo del servicio web
 				var oModelServiceArchivosCount = new sap.ui.model.odata.ODataModel(g_servicio_reporte, true);
 
 				var Url_Servi = "/Reporte01Set";
 
-				var _Filters = this._oListFilterState.aSearch.concat(this._oListFilterState.aFilter);
+				//var _Filters = this._oListFilterState.aSearch.concat(this._oListFilterState.aFilter);
 
 				var oFilters = "";
-				
-				if ( oCredatetkFilters ){
+
+				if (oCredatetkFilters) {
 					oFilters = oCredatetkFilters;
 				}
-				
+
 				//Valida si Seleccionaron filtros por Sociedad
 				if (oTicketFilters) {
 					oFilters = oFilters + " and ( " + oTicketFilters + " )";
@@ -392,21 +461,28 @@ sap.ui.define([
 				if (oStatusFilters) {
 					oFilters = oFilters + " and ( " + oStatusFilters + " )";
 				}
-				
+
 				//Valida si Seleccionaron filtros por Usuario Creador
 				if (oUsuCreFilters) {
 					oFilters = oFilters + " and ( " + oUsuCreFilters + " )";
 				}
-				
+
 				//Valida si Seleccionaron filtros por Usuario Responsable Paso
 				if (oUsuResFilters) {
 					oFilters = oFilters + " and ( " + oUsuResFilters + " )";
 				}
-				
+
 				var arrParams2 = ["$filter=" + oFilters];
 
+				this.oData = {
+					//items es una propiedad del objeto oData
+					items: []
+				};
+
 				//Leer datos del ERP
-				var oRead = this.fnReadEntity(oModelServiceArchivosCount, Url_Servi, arrParams2);
+				var oRead = this.fnReadEntityAsync(oModelServiceArchivosCount, Url_Servi, arrParams2);
+
+				
 				var iTotalItems = 0,
 					iTotalItemsCerrados = 0,
 					iTotalItemsAbiertos = 0,
@@ -417,8 +493,58 @@ sap.ui.define([
 						for (i = 0; i < oRead.datos.results.length; i++) {
 
 							var oItem = oRead.datos.results[i];
+							var oValue;
+							//Aplica Formato a la Fecha
+							if (oItem.Credatetk && oItem.Credatetk !== "") {
+								oValue = formatter.formatDate(oItem.Credatetk);
+								oItem.Credatetk = oValue;
+							}
+							//Aplica Formato a la Hora
+							if (oItem.Cretimetk && oItem.Cretimetk !== "") {
+								oValue = formatter.formatTime(oItem.Cretimetk);
+								oItem.Cretimetk = oValue;
+							}
+							//Aplica Formato a la Fecha
+							if (oItem.Upddatetk && oItem.Upddatetk !== "") {
+								oValue = formatter.formatDate(oItem.Upddatetk);
+								oItem.Upddatetk = oValue;
+							}
+							//Aplica Formato a la Hora
+							if (oItem.Updtimetk && oItem.Updtimetk !== "") {
+								oValue = formatter.formatTime(oItem.Updtimetk);
+								oItem.Updtimetk = oValue;
+							}
+							//Aplica Formato a la Hora
+							if (oItem.Horas && oItem.Horas !== "") {
+								oValue = formatter.formatTime(oItem.Horas);
+								oItem.Horas = oValue;
+							}
+							//Aplica Formato a la Fecha
+							if (oItem.Zdate && oItem.Zdate !== "") {
+								oValue = formatter.formatDate(oItem.Zdate);
+								oItem.Zdate = oValue;
+							}
+							//Aplica Formato a la Hora
+							if (oItem.Time && oItem.Time !== "") {
+								oValue = formatter.formatTime(oItem.Time);
+								oItem.Time = oValue;
+							}
+							//Aplica Formato a la Fecha
+							if (oItem.Upddate && oItem.Upddate !== "") {
+								oValue = formatter.formatDate(oItem.Upddate);
+								oItem.Upddate = oValue;
+							}
+							//Aplica Formato a la Hora
+							if (oItem.Updtime && oItem.Updtime !== "") {
+								oValue = formatter.formatTime(oItem.Updtime);
+								oItem.Updtime = oValue;
+							}
+							//Aplica Formato a la Hora
+							if (oItem.Horaspaso && oItem.Horaspaso !== "") {
+								oValue = formatter.formatTime(oItem.Horaspaso);
+								oItem.Horaspaso = oValue;
+							}
 
-							//if (oItem.Num === 1) {
 							switch (oItem.Statustk) {
 								case "00":
 									oItem.highlight = "Warning";
@@ -437,74 +563,22 @@ sap.ui.define([
 									iTotalItemsAbiertos++;
 							}
 							iTotalItems++;
-							oModelData.items.push(oItem);
-							//}
+							//this.oModelData.items.push(oItem);
+							this.oData.items.push(oItem);
 
-							//oModelDataDetail.items.push(oItem);
 						}
 
 						var oModel = new sap.ui.model.json.JSONModel();
-						oModel.setData(oModelData);
+						oModel.setData(this.oData);
 
 						var oTable = this.byId("table");
 
-						oTable.setModel(oModel, "modelPath");
-
-						// var oTemplate = new sap.m.ColumnListItem(
-						// 	 {cells: [ 
-						//     		      new sap.m.Text({text : "{modelPath>Num}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Ticket}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Bukrs}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Codtorre}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Destorre}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Codproc}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Desproc}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Statustk}"}),
-						//     		      new sap.m.ObjectStatus({state: "{path: 'modelPath>Statustk', formatter: this.formatter.status }", text : "{modelPath>Desstattk}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Usercrea}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Credatetk}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Cretimetk}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Upddatetk}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Updtimetk}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Dias}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Horas}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Despostip}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Tipp}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Pasoproc}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Txtpaso}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Status}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Desstat}"}),
-						//     		      new sap.m.Text({text : "{modelPath>Numniv}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Codtorrehijo}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Destorrehijo}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Codprochijo}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Desprochijo}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Opcbifur}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Txopbif}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Cargo}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Descargo}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Creuser}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Nomuser}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Zdate}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Time}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Upddate}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Updtime}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Diaspaso}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Horaspaso}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Tipcomp}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Waers}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Valcomp}"}),
-						//     			  new sap.m.Text({text : "{modelPath>Documento}"})
-						//         	  ]
-						// });
+						oTable.setModel(oModel);
 
 						oTable.bindItems({
-							path: "modelPath>/items",
+							path: "/items",
 							template: oTable.getBindingInfo("items").template
 						});
-						//oTable.bindItems("modelPath>/items", oTemplate);
-
-						//oTable.bindAggregation("rows", "modelPath>/items");
 
 						var sTitleTotal = this.getResourceBundle().getText("worklistTableCount", [iTotalItems]);
 						this.getModel("worklistView").setProperty("/worklistTableCount", sTitleTotal);
@@ -520,19 +594,12 @@ sap.ui.define([
 						//this.getView().setModel(oModel, "modelPath");
 
 					} else {
-
 						MessageBox.error("No se encontraron datos para los parametros ingresados.", null, "Mensaje del sistema", "OK", null);
-
-						// var oModel = new sap.ui.model.json.JSONModel();
-						// oModel.setData(oModelData);
-
-						// var oTable = this.byId("table");
-
-						// oTable.setModel(oModel, "modelPath");
 					}
 				} else {
 					MessageBox.error(oRead.msjs, null, "Mensaje del sistema", "OK", null);
 				}
+				this.fnCloseBusyDialog(); //Cerrar Cargando
 			}
 
 		},
@@ -700,8 +767,82 @@ sap.ui.define([
 			}
 		},
 
+		// Test script to generate a file from JavaScript such
+
+		emitXmlHeader: function() {
+			var headerRow = '<ss:Row>\n';
+			for (var colName in testTypes) {
+				headerRow += '  <ss:Cell>\n';
+				headerRow += '    <ss:Data ss:Type="String">';
+				headerRow += colName + '</ss:Data>\n';
+				headerRow += '  </ss:Cell>\n';
+			}
+			headerRow += '</ss:Row>\n';
+			return '<?xml version="1.0"?>\n' +
+				'<ss:Workbook xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n' +
+				'<ss:Worksheet ss:Name="Sheet1">\n' +
+				'<ss:Table>\n\n' + headerRow;
+		},
+
+		emitXmlFooter: function() {
+			return '\n</ss:Table>\n' +
+				'</ss:Worksheet>\n' +
+				'</ss:Workbook>\n';
+		},
+
+		jsonToSsXml: function(jsonObject) {
+			var row;
+			var col;
+			var xml;
+			var data = typeof jsonObject != "object" ? JSON.parse(jsonObject) : jsonObject;
+
+			xml = this.emitXmlHeader();
+
+			for (row = 0; row < data.length; row++) {
+				xml += '<ss:Row>\n';
+
+				for (col in data[row]) {
+					xml += '  <ss:Cell>\n';
+					xml += '    <ss:Data ss:Type="' + testTypes[col] + '">';
+					xml += data[row][col] + '</ss:Data>\n';
+					xml += '  </ss:Cell>\n';
+				}
+
+				xml += '</ss:Row>\n';
+			}
+
+			xml += this.emitXmlFooter();
+			return xml;
+		},
+
+		download: function(content, filename, contentType) {
+			if (!contentType) {
+				contentType = 'application/octet-stream';
+			}
+
+			//var a = document.getElementById('test');
+			var a = this.byId("test").getDomRef();
+
+			var blob = new Blob([content], {
+				'type': contentType
+			});
+			a.href = window.URL.createObjectURL(blob);
+			a.download = filename;
+
+			window.location.assign(a.href);
+		},
+
 		onDataExport3: function() {
 			//?$format=xlsx
+
+			// that MS Excel will honor non-ASCII characters.
+
+			testJson = this.oModelData.items;
+
+			console.log(this.jsonToSsXml(testJson));
+
+			this.download(this.jsonToSsXml(testJson), 'test.xls', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
 		},
 
 		onDataExport1: sap.m.Table.prototype.exportData || function(oEvent) {
@@ -748,7 +889,7 @@ sap.ui.define([
 
 				// binding information for the rows aggregation
 				rows: {
-					path: "/"
+					path: "/Repor"
 				},
 
 				// column definitions with column name and binding info for the content
@@ -782,207 +923,231 @@ sap.ui.define([
 
 				// binding information for the rows aggregation
 				rows: {
-					path: "modelPath>/items"
+					path: "/items"
 				},
 
 				// column definitions with column name and binding info for the content
 				// columns: this.byId("table").getModel("modelPath").getData().items
 				columns: [{
-						name: "Num",
-						template: {
-							content: "{modelPath>Num}"
-						}
-					}, {
-						name: "Ticket",
-						template: {
-							content: "{items>Ticket}"
-						}
-					}, {
-						name: "Sociedad",
-						template: {
-							content: "{Bukrs}"
-						}
-					}]
-					/*, {
-						name: "Cod Torre",
-						template: {
-							content: "{Codtorre}"
-						}
-					}, {
-						name: "Des Torre",
-						template: {
-							content: "{Destorre}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Codproc}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Desproc}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Statustk}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Desstattk}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Usercrea}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Credatetk}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Cretimetk}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Upddatetk}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Updtimetk}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Despostip}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Tipp}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Pasoproc}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Txtpaso}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Status}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Desstat}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Codtorrehijo}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Destorrehijo}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Codprochijo}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Desprochijo}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Opcbifur}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Txopbif}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Cargo}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Descargo}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Creuser}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Nomuser}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Zdate}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Time}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Upddate}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Updtime}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Tipcomp}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Waers}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Valcomp}"
-						}
-					}, {
-						name: "Torre",
-						template: {
-							content: "{Documento}"
-						}*/
-					// }]
+					name: "Num",
+					template: {
+						content: "{Num}"
+					}
+				}, {
+					name: "No. Tic.",
+					template: {
+						content: "{Ticket}"
+					}
+				}, {
+					name: "Soc.",
+					template: {
+						content: "{Bukrs}"
+					}
+				}, {
+					name: "Cod. Tor.",
+					template: {
+						content: "{Codtorre}"
+					}
+				}, {
+					name: "Torre",
+					template: {
+						content: "{Destorre}"
+					}
+				}, {
+					name: "Cod Proc",
+					template: {
+						content: "{Codproc}"
+					}
+				}, {
+					name: "Descripción Proceso",
+					template: {
+						content: "{Desproc}"
+					}
+				}, {
+					name: "Estatus",
+					template: {
+						content: "{Statustk}"
+					}
+				}, {
+					name: "Des st TK",
+					template: {
+						content: "{Desstattk}"
+					}
+				}, {
+					name: "Usuario Cr",
+					template: {
+						content: "{Usercrea}"
+					}
+				}, {
+					name: "Fecha Creac",
+					template: {
+						content: "{Credatetk}"
+					}
+				}, {
+					name: "Hora Creac",
+					template: {
+						content: "{Cretimetk}"
+					}
+				}, {
+					name: "Fecha Cier",
+					template: {
+						content: "{Upddatetk}"
+					}
+				}, {
+					name: "Hora Cierr",
+					template: {
+						content: "{Updtimetk}"
+					}
+				}, {
+					name: "Dias Trans",
+					template: {
+						content: "{Dias}"
+					}
+				}, {
+					name: "Horas Trans",
+					template: {
+						content: "{Horas}"
+					}
+				}, {
+					name: "Subclasifi",
+					template: {
+						content: "{Despostip}"
+					}
+				}, {
+					name: "T. Paso Fiori",
+					template: {
+						content: "{Tipp}"
+					}
+				}, {
+					name: "Pas. Proc",
+					template: {
+						content: "{Pasoproc}"
+					}
+				}, {
+					name: "Texto del paso Fiori",
+					template: {
+						content: "{Txtpaso}"
+					}
+				}, {
+					name: "Status P.",
+					template: {
+						content: "{Status}"
+					}
+				}, {
+					name: "Des st PP",
+					template: {
+						content: "{Desstat}"
+					}
+				}, {
+					name: "Niv.",
+					template: {
+						content: "{Numniv}"
+					}
+				}, {
+					name: "T. Subpr",
+					template: {
+						content: "{Codtorrehijo}"
+					}
+				}, {
+					name: "Torre Subp",
+					template: {
+						content: "{Destorrehijo}"
+					}
+				}, {
+					name: "Cod. Subpr",
+					template: {
+						content: "{Codprochijo}"
+					}
+				}, {
+					name: "Subproceso",
+					template: {
+						content: "{Desprochijo}"
+					}
+				}, {
+					name: "Opc. Bif",
+					template: {
+						content: "{Opcbifur}"
+					}
+				}, {
+					name: "Respuesta",
+					template: {
+						content: "{Txopbif}"
+					}
+				}, {
+					name: "Cargo Us Paso",
+					template: {
+						content: "{Cargo}"
+					}
+				}, {
+					name: "Cargo Usuario del Paso",
+					template: {
+						content: "{Descargo}"
+					}
+				}, {
+					name: "Usuario del Paso",
+					template: {
+						content: "{Creuser}"
+					}
+				}, {
+					name: "Usuario del Paso",
+					template: {
+						content: "{Nomuser}"
+					}
+				}, {
+					name: "Fecha Crea",
+					template: {
+						content: "{Zdate}"
+					}
+				}, {
+					name: "Hora Creac",
+					template: {
+						content: "{Time}"
+					}
+				}, {
+					name: "Fecha Cierr",
+					template: {
+						content: "{Upddate}"
+					}
+				}, {
+					name: "Hora Cierr",
+					template: {
+						content: "{Updtime}"
+					}
+				}, {
+					name: "Dias Trans",
+					template: {
+						content: "{Diaspaso}"
+					}
+				}, {
+					name: "Horas Trans",
+					template: {
+						content: "{Horaspaso}"
+					}
+				}, {
+					name: "Tipo de Compra",
+					template: {
+						content: "{Tipcomp}"
+					}
+				}, {
+					name: "Moneda",
+					template: {
+						content: "{Waers}"
+					}
+				}, {
+					name: "Valor Comp",
+					template: {
+						content: "{Valcomp}"
+					}
+				}, {
+					name: "Num. Comp",
+					template: {
+						content: "{Documento}"
+					}
+				}]
 			});
 			console.log(oExport);
 			// download exported file
-			oExport.saveFile().catch(function(oError) {
+			oExport.saveFile("DatosTickets").catch(function(oError) {
 				MessageBox.error("Error when downloading data. Browser might not be supported!\n\n" + oError);
 			}).then(function() {
 				oExport.destroy();
@@ -1128,14 +1293,14 @@ sap.ui.define([
 				width: "auto"
 			});*/
 		},
-		
+
 		onAfterRendering: function() {
-		if (!this.oDataUsuarios) {
+			if (!this.oDataUsuarios) {
 				this.fnConsultarMathCodeUsuarios();
 			}
 
 		},
-		
+
 		fnConsultarMathCodeUsuarios: function() {
 
 			//Url Servicio
@@ -1161,8 +1326,8 @@ sap.ui.define([
 
 			//this._oDialog = sap.ui.xmlfragment("com.view.fragment.Dialog", this);
 			//this.fnConsultarUsuarios();
-		}, 
-		
+		},
+
 		fnUsuariosRes: function() {
 
 			this.fnOpenDialog("com.view.fragment.UsuariosRes");
@@ -1187,7 +1352,7 @@ sap.ui.define([
 		// 	oLista.setModel(oModel);
 
 		// },
-		
+
 		fnBuscarUsuariosCre: function(oEvent) {
 			var sQuery = oEvent.getParameter("value");
 			var filters = [],
@@ -1210,7 +1375,7 @@ sap.ui.define([
 			}
 
 		},
-		
+
 		fnBuscarUsuariosRes: function(oEvent) {
 			var sQuery = oEvent.getParameter("value");
 			var filters = [],
@@ -1234,7 +1399,6 @@ sap.ui.define([
 
 		},
 
-
 		fnSeleccionarUsuarioCre: function(oEvent) {
 
 			//Contexto del item seleccionado
@@ -1242,7 +1406,7 @@ sap.ui.define([
 				//Asignar Valor
 				oUsuarioCre = this.getView().byId("IUsuCreTicket");
 			oUsuarioCre.setValue(bindingContext.getProperty("Bname"));
-		//	oSociedad.setName(bindingContext.getProperty("NameText"));
+			//	oSociedad.setName(bindingContext.getProperty("NameText"));
 
 			this.fnCloseFragment();
 		},
@@ -1254,11 +1418,11 @@ sap.ui.define([
 				//Asignar Valor
 				oUsuarioRes = this.getView().byId("IUsuRespPaso");
 			oUsuarioRes.setValue(bindingContext.getProperty("Bname"));
-		//	oSociedad.setName(bindingContext.getProperty("NameText"));
+			//	oSociedad.setName(bindingContext.getProperty("NameText"));
 
 			this.fnCloseFragment();
-		},		
-		
+		},
+
 		/**
 		 * Cerrar el fragment de Centro
 		 * @public
@@ -1267,7 +1431,7 @@ sap.ui.define([
 			this.fnCloseDialog(this.oFragment);
 			delete this.oFragment;
 		},
-		
+
 		handleLoadItems: function(oControlEvent) {
 			oControlEvent.getSource().getBinding("items").resume();
 		},

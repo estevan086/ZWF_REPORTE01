@@ -96,12 +96,12 @@
 									<!--		<SuggestionItem text="{Bname}-{NameText}" description="{NameText}" key="{Bname}"/>-->
 									<!--	</suggestionItems>-->
 									<!--</SearchField>-->
-									<Input id="IUsuCreTicket" showValueHelp="true" valueHelpRequest="fnUsuariosCre" valueHelpOnly="false"  class="sapUiSmallMarginBottom" type="Text" placeholder="Usu. Cre TK..." maxLength="15"/>
+									<Input id="IUsuCreTicket" showValueHelp="true" valueHelpRequest="fnUsuariosCre" valueHelpOnly="false" class="sapUiSmallMarginBottom"
+										type="Text" placeholder="Usu. Cre TK..." maxLength="15"/>
 									<!--<MultiComboBox id="UsuCreTicketCB" selectionFinish="handleSelectionUsuCreFinish"-->
 									<!--	items="{ path: '/UsuariosSet', sorter: { path: 'Bname' } }">-->
 									<!--	<core:Item key="{Bname}" text="{Bname}-{NameText}"/>-->
 									<!--</MultiComboBox>-->
-									
 									<!--<ComboBox-->
 									<!--	showSecondaryValues= "true"-->
 									<!--	filterSecondaryValues= "true"-->
@@ -118,7 +118,8 @@
 							</filterBar:FilterItem>
 							<filterBar:FilterItem name="FUsuarioRP" label="Usu. Resp. Paso">
 								<filterBar:control>
-									<Input id="IUsuRespPaso" showValueHelp="true" valueHelpRequest="fnUsuariosRes"  valueHelpOnly="false" class="sapUiSmallMarginBottom" type="Text" placeholder="Usu. Resp Paso..." maxLength="15"/>
+									<Input id="IUsuRespPaso" showValueHelp="true" valueHelpRequest="fnUsuariosRes" valueHelpOnly="false" class="sapUiSmallMarginBottom"
+										type="Text" placeholder="Usu. Resp Paso..." maxLength="15"/>
 								</filterBar:control>
 							</filterBar:FilterItem>
 						</filterBar:filterItems>
@@ -135,30 +136,31 @@
 									<FlexItemData growFactor="2"/>
 								</layoutData>
 							</SearchField>
-							<!--<Button icon="sap-icon://download" press="onDataExport">-->
-							<!--	<layoutData>-->
-							<!--		<FlexItemData growFactor="3"/>-->
-							<!--	</layoutData>-->
-							<!--</Button>-->
+							<Button id="Export3" icon="sap-icon://download" press="onDataExport">
+								<layoutData>
+									<FlexItemData growFactor="1"/>
+								</layoutData>
+							</Button>
+							<Button tooltip="View Settings" icon="sap-icon://drop-down-list" press="handleViewSettingsDialogButtonPressed"/>
+							<!--<Link id="test" xmlns="sap.m" text="" href="" target="_blank" download="very_important_report.pdf"></Link>-->
+							<BusyDialog id="BusyDialog" visible="false" title="Loading Data" text="... now loading the data from a far away server"/>
 						</items>
 					</FlexBox>
-					
 					<ScrollContainer height="525px" horizontal="true" vertical="true" focusable="true">
 						<!--<Table id="table" width="auto"-->
 						<!--<Table id="table" width="500%" items="{modelPath>/items}"-->
+						<!--<Table id="table" width="500%" items="{path: '/list_materiales'}"-->
 						<!--<Table id="table" width="auto" items="{ path: '/Reporte01Set', sorter: { path: 'Ticket', descending: false } }"-->
-						<Table id="table" width="500%" items="{modelPath>/items}"
-						 noDataText="{worklistView>/tableNoDataText}"
+						<Table id="table" width="500%" items="{path: '/list_materiales'}" noDataText="{worklistView>/tableNoDataText}"
 							busyIndicatorDelay="{worklistView>/tableBusyDelay}" growing="true" growingScrollToLoad="true" updateFinished="onUpdateFinished">
 							<headerToolbar>
 								<Toolbar>
 									<Title id="tableHeader" text="{worklistView>/worklistTableTitle}"/>
 									<ToolbarSpacer/>
 									<!--<SearchField id="searchFielde" tooltip="{i18n>worklistSearchTooltip}" search="onSearch" width="auto"/>-->
-									<!--<Button icon="sap-icon://download" press="onDataExport1"/> -->
+									<!--<Button icon="sap-icon://download" press="onDataExport"/> -->
 									<!--<Button text="Ejecutar" press="ongetData"/>-->
 									<ToolbarSpacer/>
-									<!--<Button tooltip="View Settings" icon="sap-icon://drop-down-list" press="handleViewSettingsDialogButtonPressed"/>-->
 								</Toolbar>
 							</headerToolbar>
 							<columns>
@@ -295,55 +297,50 @@
 							<items>
 								<ColumnListItem>
 									<cells>
-										<Text text="{modelPath>Num}"/>
-										<ObjectIdentifier title="{modelPath>Ticket}"/>
-										<Text text="{modelPath>Bukrs}"/>
-										<Text text="{modelPath>Codtorre}"/>
-										<Text text="{modelPath>Destorre}"/>
-										<Text text="{modelPath>Codproc}"/>
-										<Text text="{modelPath>Desproc}"/>
-										<Text text="{modelPath>Statustk}"/>
-										<ObjectStatus	class="sapUiSmallMarginBottom"
-														text="{modelPath>Desstattk}"
-														state="{path: 'modelPath>Statustk', formatter: '.formatter.status' }" />
-										<!--<Text text="{modelPath>Desstattk}"/>-->
-										<Text text="{modelPath>Usercrea}"/>
-										<Text text="{path: 'modelPath>Credatetk', formatter: '.formatter.formatDate'}"/>
-										<Text text="{path: 'modelPath>Cretimetk', formatter: '.formatter.formatTime'}"/>
-										<Text text="{path: 'modelPath>Upddatetk', formatter: '.formatter.formatDate'}"/>
-										<Text text="{path: 'modelPath>Updtimetk', formatter: '.formatter.formatTime'}"/>
-										<Text text="{path: 'modelPath>Dias', formatter: '.formatter.formatDate'}"/>
-										<Text text="{path: 'modelPath>Horas', formatter: '.formatter.formatTime'}"/>
-										<Text text="{modelPath>Despostip}"/>
-										<Text text="{modelPath>Tipp}"/>
-										<Text text="{modelPath>Pasoproc}"/>
-										<Text text="{modelPath>Txtpaso}"/>
-										<Text text="{modelPath>Status}"/>
-										<Text text="{modelPath>Desstat}" />
-										<ObjectStatus	class="sapUiSmallMarginBottom"
-														text="{modelPath>Desstat}"
-														state="{path: 'modelPath>Status', formatter: '.formatter.status' }" />
-										<Text text="{modelPath>Numniv}"/>
-										<Text text="{modelPath>Codtorrehijo}"/>
-										<Text text="{modelPath>Destorrehijo}"/>
-										<Text text="{modelPath>Codprochijo}"/>
-										<Text text="{modelPath>Desprochijo}"/>
-										<Text text="{modelPath>Opcbifur}"/>
-										<Text text="{modelPath>Txopbif}"/>
-										<Text text="{modelPath>Cargo}"/>
-										<Text text="{modelPath>Descargo}"/>
-										<Text text="{modelPath>Creuser}"/>
-										<Text text="{modelPath>Nomuser}"/>
-										<Text text="{path: 'modelPath>Zdate', formatter: '.formatter.formatDate'}"/>
-										<Text text="{path: 'modelPath>Time', formatter: '.formatter.formatTime'}"/>
-										<Text text="{path: 'modelPath>Upddate', formatter: '.formatter.formatDate'}"/>
-										<Text text="{path: 'modelPath>Updtime', formatter: '.formatter.formatTime'}"/>
-										<Text text="{path: 'modelPath>Diaspaso', formatter: '.formatter.formatDate'}"/>
-										<Text text="{path: 'modelPath>Horaspaso', formatter: '.formatter.formatTime'}"/>
-										<Text text="{modelPath>Tipcomp}"/>
-										<Text text="{modelPath>Waers}"/>
-										<Text text="{modelPath>Valcomp}"/>
-										<Text text="{modelPath>Documento}"/>
+										<Text text="{Num}"/>
+										<ObjectIdentifier title="{Ticket}"/>
+										<Text text="{Bukrs}"/>
+										<Text text="{Codtorre}"/>
+										<Text text="{Destorre}"/>
+										<Text text="{Codproc}"/>
+										<Text text="{Desproc}"/>
+										<Text text="{Statustk}"/>
+										<ObjectStatus class="sapUiSmallMarginBottom" text="{Desstattk}" state="{path: 'Statustk', formatter: '.formatter.status' }"/>
+										<!--<Text text="{Desstattk}"/>-->
+										<Text text="{Usercrea}"/>
+										<Text text="{Credatetk}"/>
+										<Text text="{Cretimetk}"/>
+										<Text text="{Upddatetk}"/>
+										<Text text="{Updtimetk}"/>
+										<Text text="{Dias}"/>
+										<Text text="{Horas}"/>
+										<Text text="{Despostip}"/>
+										<Text text="{Tipp}"/>
+										<Text text="{Pasoproc}"/>
+										<Text text="{Txtpaso}"/>
+										<Text text="{Status}"/>
+										<ObjectStatus class="sapUiSmallMarginBottom" text="{Desstat}" state="{path: 'Status', formatter: '.formatter.status' }"/>
+										<Text text="{Numniv}"/>
+										<Text text="{Codtorrehijo}"/>
+										<Text text="{Destorrehijo}"/>
+										<Text text="{Codprochijo}"/>
+										<Text text="{Desprochijo}"/>
+										<Text text="{Opcbifur}"/>
+										<Text text="{Txopbif}"/>
+										<Text text="{Cargo}"/>
+										<Text text="{Descargo}"/>
+										<Text text="{Creuser}"/>
+										<Text text="{Nomuser}"/>
+										<Text text="{Zdate}"/>
+										<Text text="{Time}"/>
+										<Text text="{Upddate}"/>
+										<Text text="{Updtime}"/>
+										<Text text="{Diaspaso}"/>
+										<Text text="{Horaspaso}"/>
+										<Text text="{Tipcomp}"/>
+										<Text text="{Waers}"/>
+										<Text text="{Valcomp}"/>
+										<Text text="{Documento}"/>
 									</cells>
 								</ColumnListItem>
 							</items>
