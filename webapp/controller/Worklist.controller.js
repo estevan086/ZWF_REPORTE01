@@ -256,12 +256,11 @@ sap.ui.define([
 			this.fnOpenBusyDialog();
 			sap.ui.getCore().byId("idBusyDialog").setText("Cargando datos...");
 
-			
 			var that = this;
-			jQuery.sap.delayedCall(500, this, function () {
+			jQuery.sap.delayedCall(500, this, function() {
 				this.ongetOData();
 			});
-			
+
 			// busyDialog.close();
 			// busyDialog.setVisible(false);
 
@@ -482,8 +481,8 @@ sap.ui.define([
 				//Leer datos del ERP
 				var oRead = this.fnReadEntityAsync(oModelServiceArchivosCount, Url_Servi, arrParams2);
 
-				
 				var iTotalItems = 0,
+					iTotalTickets = 0,
 					iTotalItemsCerrados = 0,
 					iTotalItemsAbiertos = 0,
 					iTotalItemsAnulados = 0;
@@ -494,6 +493,29 @@ sap.ui.define([
 
 							var oItem = oRead.datos.results[i];
 							var oValue;
+
+							//Valida que el registro sea un Ticket
+							if (oItem.Num === 1) {
+								iTotalTickets++;
+								switch (oItem.Statustk) {
+									case "00":
+										oItem.highlight = "Warning";
+										iTotalItemsAbiertos++;
+										break;
+									case "10":
+										oItem.highlight = "Success";
+										iTotalItemsCerrados++;
+										break;
+									case "15":
+										oItem.highlight = "Error";
+										iTotalItemsAnulados++;
+										break;
+									default:
+										oItem.highlight = "Warning";
+										iTotalItemsAbiertos++;
+								}
+							}
+
 							//Aplica Formato a la Fecha
 							if (oItem.Credatetk && oItem.Credatetk !== "") {
 								oValue = formatter.formatDate(oItem.Credatetk);
@@ -545,24 +567,8 @@ sap.ui.define([
 								oItem.Horaspaso = oValue;
 							}
 
-							switch (oItem.Statustk) {
-								case "00":
-									oItem.highlight = "Warning";
-									iTotalItemsAbiertos++;
-									break;
-								case "10":
-									oItem.highlight = "Success";
-									iTotalItemsCerrados++;
-									break;
-								case "15":
-									oItem.highlight = "Error";
-									iTotalItemsAnulados++;
-									break;
-								default:
-									oItem.highlight = "Warning";
-									iTotalItemsAbiertos++;
-							}
 							iTotalItems++;
+
 							//this.oModelData.items.push(oItem);
 							this.oData.items.push(oItem);
 
@@ -574,13 +580,21 @@ sap.ui.define([
 						var oTable = this.byId("table");
 
 						oTable.setModel(oModel);
-
+						
+						//---SAP.UI.TABLE
+						// oTable.bindRows({
+						// 	path: "/items"
+						// });
+						
+						//oTable.getBinding().refresh(true);
+						
+						//---SAP.M
 						oTable.bindItems({
 							path: "/items",
 							template: oTable.getBindingInfo("items").template
 						});
 
-						var sTitleTotal = this.getResourceBundle().getText("worklistTableCount", [iTotalItems]);
+						var sTitleTotal = this.getResourceBundle().getText("worklistTableCount", [iTotalTickets]);
 						this.getModel("worklistView").setProperty("/worklistTableCount", sTitleTotal);
 
 						var sTitleCerrados = this.getResourceBundle().getText("worklistTableCountCerrados", [iTotalItemsCerrados]);

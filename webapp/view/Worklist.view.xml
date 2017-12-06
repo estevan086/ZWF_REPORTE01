@@ -151,7 +151,7 @@
 						<!--<Table id="table" width="500%" items="{modelPath>/items}"-->
 						<!--<Table id="table" width="500%" items="{path: '/list_materiales'}"-->
 						<!--<Table id="table" width="auto" items="{ path: '/Reporte01Set', sorter: { path: 'Ticket', descending: false } }"-->
-						<Table id="table" width="500%" items="{path: '/list_materiales'}" noDataText="{worklistView>/tableNoDataText}"
+						<Table id="table" width="500%" items="{path: '/items'}" noDataText="{worklistView>/tableNoDataText}"
 							busyIndicatorDelay="{worklistView>/tableBusyDelay}" growing="true" growingScrollToLoad="true" updateFinished="onUpdateFinished">
 							<headerToolbar>
 								<Toolbar>
